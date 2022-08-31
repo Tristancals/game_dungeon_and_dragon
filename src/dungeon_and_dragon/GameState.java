@@ -1,4 +1,6 @@
 package dungeon_and_dragon;
 
-public class GameState {
+public enum GameState {
+    START,PREPARATION,GAME,CONCLUSION,END;
+
 }
