@@ -24,10 +24,18 @@ public abstract class Enemy extends Room {
         this.life = life;
         this.lifeMax = life;
         this.defense = defense;
+
+        buffEnemy(level);
     }
 
     ////////////////////////////////////////////////////////////////
 
+    public void buffEnemy(int level){
+        int buff=level-1;
+        attack[1]=attack[1]+buff;
+        life=life+(buff*2);
+        lifeMax=lifeMax+(buff*2);
+    }
     ////////////////////////////////////////////////////////////////
 
     public String getType() {

@@ -44,7 +44,7 @@ public class Chest extends Room{
 
     public void initLootPotion() {
         heal = switch (rand.nextInt(3)) {
-            case 0, 1 -> new Heal("Petite Potion", 2);
+            case 0, 1 -> new Heal("Petite Potion", 3);
             default -> new Heal("Potion", 5);
         };
     }
