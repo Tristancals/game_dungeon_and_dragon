@@ -44,13 +44,41 @@ public abstract class Hero implements SufferedAnAttack {
     }
 
     public void sufferedAnAttack(SufferedAnAttack enemy, Menu menu) {
+        int damage = enemy.getDamages();
+        if (rand.nextInt(6 - enemy.getDefense()) > 0) {
+            setLife(getLife() - damage);
+            menu.display("# -" + enemy.getName() + " le " + enemy.getType() +
+                    " vous inflige " + damage + " de dégâts à votre héro");
+        } else {
+            menu.display("# -Le " + enemy.getType()
+                    + " à raté sont attaque!!!");
+        }
+        if (getLife() > 0) {
+            enemy.sufferedAnAttack(this, menu);
+        } else {
+            menu.display("# \n~~~~~~~~~ - YOU LOSE - ~~~~~~~~~" +
+                    "\n# -Votre héro à mordu la poussière..." +
+                    "\n#                  //////" +
+                    "\n#       //////////////////////////" +
+                    "\n#         //////   " + this.getName() + "  //////" +
+                    "\n#     //////////////////////////" +
+                    "\n#              //////" +
+                    "\n#             //////" +
+                    "\n#            //////" +
+                    "\n#           //////" +
+                    "\n#          //////");
+        }
     }
     public boolean isALife() {
         return getLife() > 0;
     }
+
     public int getDamages() {
-       return 0;
+        int min = getAttack()[0];
+        int max = (getAttack()[1]- getAttack()[0]) + (1 + getOffensive().getStats());
+        return min + rand.nextInt(max);
     }
+
     public String displayInventory(){
        return "";
     }
@@ -84,7 +112,7 @@ public abstract class Hero implements SufferedAnAttack {
         return life;
     }
 
-    private void setLife(int life) {
+    public void setLife(int life) {
         this.life = life;
     }
 
@@ -148,6 +176,6 @@ public abstract class Hero implements SufferedAnAttack {
                 "\n# " + defensive +
                 "\n# " + displayInventory() +
                 "\n# Avec pour position " + position +
-                "\n##########################################\n";
+                "\n#######################################\n";
     }
 }

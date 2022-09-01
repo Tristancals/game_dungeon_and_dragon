@@ -1,6 +1,8 @@
 package dungeon_and_dragon.rooms;
 
+import dungeon_and_dragon.Menu;
 import dungeon_and_dragon.gears.*;
+import dungeon_and_dragon.heros.Hero;
 
 import java.util.Random;
 
@@ -13,6 +15,10 @@ public class Chest extends Room{
 
     public Chest() {
         initLoot();
+    }
+
+    public void openChest(Hero player, Menu menu){
+        System.out.println("f-openChest");
     }
 
     public void initLoot() {

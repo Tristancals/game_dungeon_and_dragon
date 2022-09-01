@@ -1,7 +1,9 @@
 package dungeon_and_dragon;
 
 import dungeon_and_dragon.heros.Hero;
+import dungeon_and_dragon.rooms.Chest;
 import dungeon_and_dragon.rooms.Room;
+import dungeon_and_dragon.rooms.enemies.Enemy;
 
 import java.util.*;
 
@@ -10,12 +12,15 @@ public class Game {
 
     private final java.util.Random rand = new java.util.Random();
     private Dungeon dungeon;
-    private List<Room> level=new ArrayList<>();
-    private List<Hero> players=new ArrayList<>();
+    private List<Room> level = new ArrayList<>();
+    private int nbrRoom;
+    private List<Hero> players = new ArrayList<>();
     private int dungeonLevel;
-    private GameState states=GameState.PREPARATION;//TODO PREPARATION START
+    private GameState states = GameState.START;//TODO PREPARATION START
     private final Menu menu;
+    private int round = 0;
 
+    private boolean gameInProgress = true;
 
     public Game(Menu menu) {
         this.menu = menu;
@@ -24,8 +29,7 @@ public class Game {
 
 
     public void start() {
-        boolean playing = true;
-        while (playing) {
+        while (gameInProgress) {
             switch (this.states) {
                 case START:
                     System.out.println("---START---");
@@ -37,6 +41,7 @@ public class Game {
                     break;
                 case GAME:
                     System.out.println("---GAME---");
+                    playRound();
                     //
                     break;
                 case CONCLUSION:
@@ -45,14 +50,14 @@ public class Game {
                     break;
                 case END:
                     System.out.println("---END---");
-                    playing=false;
+                    gameInProgress = false;
                     ///
                     break;
             }
         }
     }
 
-    public void selectDifficultyDungeon(){
+    public void selectDifficultyDungeon() {
         System.out.println("f-selectDifficultyDungeon");
 
         menu.displayChoice("Sélectionner la difficulté",
@@ -70,17 +75,137 @@ public class Game {
         functionChoiceMap.put("666", this::selectDifficultyDungeon);
         menu.listenerChoice(functionChoiceMap);
     }
-    public void initDungeon(int nbrRoom,int dungeonLevel){
-        dungeon=new Dungeon(nbrRoom,dungeonLevel);
-        level=dungeon.getLevel();
+
+    public void initDungeon(int nbrRoom, int dungeonLevel) {
+        this.nbrRoom = nbrRoom;
+        dungeon = new Dungeon(nbrRoom, dungeonLevel);
+        level = dungeon.getLevel();
         System.out.println(level);
-        setStates(GameState.END);
+        setStates(GameState.GAME);
     }
 
     ///////////////////////////////////////////////
-//    public void whatIsInTheCase(Character player) {
-//
-//    }
+
+
+    public void playRound() {
+        System.out.println("f-playRound");
+        round++;
+        if (!allPlayerDead()) {
+            int playerNbr = 0;
+            for (Hero player : players) {
+                playerNbr++;
+                if (player.isALife()) {
+                    menu.display("######## - Tour " + round +
+                            " de " + player.getName() +
+                            " " + playerNbr + "/" + players.size() +
+                            " - ########\n" + player);
+                    whatPlayerDoAtStart(player);
+                    playerMouve(player);
+
+                    whatIsInTheCase(player);
+
+                }
+            }
+        } else {
+            gameInProgress = false;
+        }
+        if (gameInProgress) {
+            //TODO demander nouveaux tour
+            playRound();
+        } else {
+            //TODO afficher stats de la partie
+            //TODO proposer une nouvelle partie avec les mm personnage ou pas..;
+            menu.display(players.toString());
+        }
+    }
+
+    public void whatPlayerDoAtStart(Hero player) {
+        System.out.println("f-whatPlayerDo");
+        List<String> choices = new ArrayList<>();
+        Map<String, Runnable> functionChoiceMap = new HashMap<>();
+        functionChoiceMap.put("1", () -> playerMouve(player));
+        choices.add("'1' pour lancer le dé");
+        if (player.getLife() < player.getLifeMax()) {
+            choices.add("'2' pour passer votre tour et regagner 1PV");
+            functionChoiceMap.put("2", () -> playerStays(player));
+        }
+        if (!player.displayInventory().equals("")) {
+            choices.add("'3' pour passer votre tour et consommer une potion");
+            functionChoiceMap.put("3", () -> playerStaysAndTakeHeal(player));
+        }
+        choices.add("'0' pour quitter le jeu");
+        functionChoiceMap.put("0", () -> menu.exitGame(this));
+
+        String[] choicesArray = new String[choices.size()];
+
+        menu.displayChoice("Que faite vous?", choices.toArray(choicesArray));
+        menu.listenerChoice(functionChoiceMap);
+    }
+
+    public void playerStays(Hero player){
+        System.out.println("f-playerStays");
+        player.setLife(player.getLife()+1);
+    }
+
+    public void playerStaysAndTakeHeal(Hero player){
+        System.out.println("f-playerStaysAndTakeHeal");
+
+    }
+
+    public void playerMouve(Hero player) {
+        System.out.println("f-playerMouve");
+
+        int dieRoll = this.dieRoll();
+        int positionPlayer = player.getPosition();
+        positionPlayer += dieRoll;
+        menu.display("\n# Il lance le dé ..." +
+                "\n# Il obtient: " + dieRoll +
+                "\n#  " + (positionPlayer <= this.nbrRoom ?
+                "Se qui l'amène dans la pieces: " +positionPlayer:
+                ""));
+        if (positionPlayer > this.nbrRoom) {
+            // TODO exception personnage hors limite
+            positionPlayer -= (dieRoll * rand.nextInt(dieRoll / 2) + dieRoll);
+            menu.display("Un vortex la téléporter en position: " + positionPlayer);
+        } else if (positionPlayer == this.nbrRoom) {
+            // TODO partie fini à la fin du tour proposer une nouvelle partie
+//            displayPlayerGetOut(player);
+            gameInProgress = false;
+        }
+        player.setPosition(positionPlayer);
+    }
+
+
+    public boolean allPlayerDead() {
+        System.out.println("f-allPlayerDead");
+        int count = 0;
+        for (Hero player :
+                players) {
+            if (!player.isALife()) {
+                count++;
+            }
+        }
+        return count == players.size();
+    }
+
+
+    public int dieRoll() {
+        System.out.println("f-dieRoll");
+        return 1 + rand.nextInt(6);
+    }
+    public void whatIsInTheCase(Hero player) {
+        System.out.println("f-whatIsInTheCase");
+        System.out.println(level.get(player.getPosition()).getClass());
+        System.out.println(Enemy.class);//TODO class enemy/goblin/dragon/sorcerer!!!
+        Room room=level.get(player.getPosition());
+        if (Enemy.class.equals(room.getClass())) {
+            ((Enemy) room).sufferedAnAttack(player, menu);
+        } else if (Chest.class.equals(room.getClass())) {
+            ((Chest) room).openChest(player,menu);
+        } else {
+            menu.display(room.toString());
+        }
+    }
 
 //    public Room takeLoot(Room chestRoom, Character player) {
 //        ChestRoom chest = ((ChestRoom) chestRoom);
@@ -105,27 +230,20 @@ public class Game {
 //    }
 
 
-
-//    public int dieRoll() {
-//        return 1 + rand.nextInt(6);
-//    }
-
-
-
-
-
     ///////////////////////////////////////////////
 
     public List<Hero> getPlayers() {
         return players;
     }
 
-    public void setPlayers( List<Hero> players) {
+    public void setPlayers(List<Hero> players) {
         this.players = players;
     }
-    public void addPlayers( Hero player) {
+
+    public void addPlayers(Hero player) {
         this.players.add(player);
     }
+
     public void setStates(GameState states) {
         this.states = states;
     }

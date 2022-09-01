@@ -1,11 +1,13 @@
 package dungeon_and_dragon.rooms.enemies;
 
+import dungeon_and_dragon.Menu;
+import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Room;
 
 import java.util.Arrays;
 import java.util.Random;
 
-public abstract class Enemy extends Room {
+public abstract class Enemy extends Room implements SufferedAnAttack {
     private String type;
     private String name;
     private int level;
@@ -29,6 +31,31 @@ public abstract class Enemy extends Room {
     }
 
     ////////////////////////////////////////////////////////////////
+
+    public void sufferedAnAttack(SufferedAnAttack player, Menu menu) {
+        int damage =player.getDamages() ;
+        if (rand.nextInt(6 - player.getDefense()) > 0) {
+            setLife(getLife() - damage);
+            menu.display("# -" + player.getName() + " le " + player.getType() +
+                    " inflige " + damage + " de dégâts au " + this.getType());
+        } else {
+            menu.display("# -Votre attaque à raté!!!");
+        }
+        if (getLife() > 0) {
+            player.sufferedAnAttack(this, menu);
+        } else {
+            menu.display(" \n#     #~#~#~#~#~# - VICTOIRE! - #~#~#~#~#~#" +
+                    "\n# -Votre personnage a terrasser le " + this.getType() +
+                    " " + this.getName() + "...");
+
+        }
+    }
+
+    public int getDamages() {
+        int min = getAttack()[0];
+        int max = (getAttack()[1]- getAttack()[0]) + 1;
+        return min + rand.nextInt(max);
+    }
 
     public void buffEnemy(int level){
         int buff=level-1;
@@ -84,7 +111,7 @@ public abstract class Enemy extends Room {
         return "\n######### - FICHE ENNEMI - #########" +
                 "\n# Le " + type + " nommer " + name + ", niveau " + level +
                 "\n# " + life + "/"+getLifeMax()+"PV, attaque " + attack[0] + "-" +attack[1] +
-                "}\n#######################################\n";
+                "}\n####################################\n";
     }
 
 }
