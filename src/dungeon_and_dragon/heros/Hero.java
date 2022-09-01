@@ -1,4 +1,4 @@
-package dungeon_and_dragon.characters;
+package dungeon_and_dragon.heros;
 
 import dungeon_and_dragon.Menu;
 import dungeon_and_dragon.gears.Defensive;
@@ -8,7 +8,7 @@ import dungeon_and_dragon.interfaces.SufferedAnAttack;
 
 import java.util.ArrayList;
 
-public abstract class Character implements SufferedAnAttack {
+public abstract class Hero implements SufferedAnAttack {
     private String type;
     private String name;
     private int level;
@@ -24,9 +24,9 @@ public abstract class Character implements SufferedAnAttack {
 
     ////////////////////////////////////////////////////////////////
 
-    public Character(String type, String name, int level,
-                        int life, int[] attack,
-                        Offensive offensive, Defensive defensive, ArrayList<Heal> inventory) {
+    public Hero(String type, String name, int level,
+                int life, int[] attack,
+                Offensive offensive, Defensive defensive, ArrayList<Heal> inventory) {
         this.type = type;
         this.name = name;
         this.level = level;
@@ -148,6 +148,6 @@ public abstract class Character implements SufferedAnAttack {
                 "\n# " + defensive +
                 "\n# " + displayInventory() +
                 "\n# Avec pour position " + position +
-                "}\n##########################################\n";
+                "\n##########################################\n";
     }
 }

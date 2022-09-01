@@ -1,12 +1,16 @@
 package dungeon_and_dragon;
 
+import dungeon_and_dragon.heros.Hero;
 import dungeon_and_dragon.rooms.Room;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Game {
     private final java.util.Random rand = new java.util.Random();
     private final Room[] dungeon = new Room[65];
-    private Character[] players;
+    private List<Hero> players=new ArrayList<>();
     private int dungeonLevel;
     private GameState states=GameState.START;
     private final Menu menu;
@@ -47,6 +51,16 @@ public class Game {
         }
     }
 
+    public List<Hero> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers( List<Hero> players) {
+        this.players = players;
+    }
+    public void addPlayers( Hero player) {
+        this.players.add(player);
+    }
     public void setStates(GameState states) {
         this.states = states;
     }

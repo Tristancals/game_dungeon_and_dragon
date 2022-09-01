@@ -1,10 +1,10 @@
-package dungeon_and_dragon.characters;
+package dungeon_and_dragon.heros;
 
 import dungeon_and_dragon.gears.*;
 
 import java.util.ArrayList;
 
-public class Wizard extends Character{
+public class Wizard extends Hero {
     public Wizard(String name, int level, Offensive offensive,
                    Defensive defensive, ArrayList<Heal> inventory) {
 

@@ -1,9 +1,9 @@
-package dungeon_and_dragon.characters;
+package dungeon_and_dragon.heros;
 
 import dungeon_and_dragon.gears.*;
 import java.util.ArrayList;
 
-public class Warrior extends Character{
+public class Warrior extends Hero {
     public Warrior(String name, int level, Offensive offensive,
                    Defensive defensive, ArrayList<Heal> inventory) {
 

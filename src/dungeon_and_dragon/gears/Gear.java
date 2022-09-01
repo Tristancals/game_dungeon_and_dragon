@@ -12,6 +12,6 @@ public abstract class Gear {
     }
 
     public String toString() {
-        return "\n      " + name + ", " + stats ;
+        return "      " + name + ", " + stats ;
     }
 }
