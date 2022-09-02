@@ -39,7 +39,7 @@ public class Dungeon {
                 });
             }
         }
-        level.add(new Dragon(setMonsterName(), dungeonLevel+3));
+        level.add(new Dragon("Le grand "+setMonsterName(), dungeonLevel+3));
     }
 
     public Room selectMonster() {

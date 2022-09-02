@@ -4,6 +4,7 @@ import dungeon_and_dragon.Menu;
 import dungeon_and_dragon.gears.*;
 import dungeon_and_dragon.heros.Hero;
 
+import java.util.Objects;
 import java.util.Random;
 
 public class Chest extends Room{
@@ -17,9 +18,7 @@ public class Chest extends Room{
         initLoot();
     }
 
-    public void openChest(Hero player, Menu menu){
-        System.out.println("f-openChest");
-    }
+
 
     public void initLoot() {
         switch (rand.nextInt(4)) {
@@ -55,6 +54,7 @@ public class Chest extends Room{
         };
     }
 
+
     public Heal getHeal() {
         return heal;
     }
@@ -84,7 +84,7 @@ public class Chest extends Room{
     }
 
     public String toString() {
-        return "\nIl y a un coffre...." +
+        return "\n# Il y a un coffre...." +
                 (heal != null ? heal.toString() : "") +
                 (offensive != null ?  offensive.toString() : "") +
                 (defensive != null ?  defensive.toString() : "");

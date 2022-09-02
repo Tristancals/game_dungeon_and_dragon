@@ -3,6 +3,7 @@ package dungeon_and_dragon;
 import dungeon_and_dragon.heros.Hero;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Chest;
+import dungeon_and_dragon.rooms.Empty;
 import dungeon_and_dragon.rooms.Room;
 import dungeon_and_dragon.rooms.enemies.Enemy;
 
@@ -59,7 +60,6 @@ public class Game {
     }
 
     public void selectDifficultyDungeon() {
-        System.out.println("f-selectDifficultyDungeon");
 
         menu.displayChoice("Sélectionner la difficulté",
                 new String[]{"'1' pour une petite balade..(facile)",
@@ -68,7 +68,7 @@ public class Game {
                         "'4' pour un suicide..(mortelle)",
                         "'0' pour quitter le jeu"});
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", () -> initDungeon(40, 1));
+        functionChoiceMap.put("1", () -> initDungeon(400, 1));
         functionChoiceMap.put("2", () -> initDungeon(45, 2));
         functionChoiceMap.put("3", () -> initDungeon(50, 3));
         functionChoiceMap.put("4", () -> initDungeon(55, 4));
@@ -90,7 +90,6 @@ public class Game {
 
 
     public void playRound() {
-        System.out.println("f-playRound ");
         round++;
         if (!allPlayerDead()) {
             int playerNbr = 0;
@@ -131,8 +130,7 @@ public class Game {
         }
     }
     public void whatDoesThePlayerDoDuringTheFight(SufferedAnAttack player,SufferedAnAttack enemy, Menu menu){
-        System.out.println("f-whatDoesThePlayerDoDuringTheFight");
-        menu.displayChoice("Que faite vous?",
+        menu.displayChoice("Combat",
                 new String[]{"'1' pour lancer une attaque",
                 "'2' pour tenter de fuir ...("+(6-dungeonLevel)+"/6 de réussit)",
                 "'0' pour quitter le jeu.."});
@@ -144,7 +142,6 @@ public class Game {
         menu.listenerChoice(functionChoiceMap);
     }
     public void whatDoesThePlayerDoInHisTurn(Hero player) {
-        System.out.println("f-whatPlayerDo");
         List<String> choices = new ArrayList<>();
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
         functionChoiceMap.put("1", () -> playerMouve(player));
@@ -153,39 +150,35 @@ public class Game {
         if (player.getLife() < player.getLifeMax()) {
             choices.add("'2' pour passer votre tour et regagner 1PV");
             functionChoiceMap.put("2", () -> playerStays(player));
+            if (!player.displayInventory().equals("Inventaire:")) {
+                choices.add("'3' pour passer votre tour et consommer une potion");
+                functionChoiceMap.put("3", () -> playerStaysAndTakeHeal(player));
+            }
         }
-        if (!player.displayInventory().equals("")) {
-            choices.add("'3' pour passer votre tour et consommer une potion");
-            functionChoiceMap.put("3", () -> playerStaysAndTakeHeal(player));
-        }
-
         choices.add("'0' pour quitter le jeu");
         functionChoiceMap.put("666", () -> whatDoesThePlayerDoInHisTurn(player));
         functionChoiceMap.put("0", () -> menu.exitGame(this));
         String[] choicesArray = new String[choices.size()];
-        menu.displayChoice("Que faite vous?", choices.toArray(choicesArray));
+        menu.displayChoice("Debut de votre tour", choices.toArray(choicesArray));
         menu.listenerChoice(functionChoiceMap);
     }
 
     public void playerStays(Hero player){
-        System.out.println("f-playerStays");
         player.setLife(player.getLife()+1);
     }
 
     public void playerStaysAndTakeHeal(Hero player){
-        System.out.println("f-playerStaysAndTakeHeal");
-
+        player.selectHeal(menu);
     }
 
     public void playerMouve(Hero player) {
-        System.out.println("f-playerMouve");
 
         int dieRoll = this.dieRoll();
         int positionPlayer = player.getPosition();
         positionPlayer += dieRoll;
         menu.display("\n# Il lance le dé ..." +
                 "\n# Il obtient: " + dieRoll +
-                "\n#  " + (positionPlayer <= this.nbrRoom ?
+                "\n# " + (positionPlayer <= this.nbrRoom ?
                 "Se qui l'amène dans la pieces: " +positionPlayer:
                 ""));
         if (positionPlayer > this.nbrRoom) {
@@ -202,7 +195,6 @@ public class Game {
 
 
     public boolean allPlayerDead() {
-        System.out.println("f-allPlayerDead");
         int count = 0;
         for (Hero player :
                 players) {
@@ -215,18 +207,45 @@ public class Game {
 
 
     public int dieRoll() {
-        System.out.println("f-dieRoll");
         return 1 + rand.nextInt(6);
     }
     public void whatIsInTheCase(Hero player) {
-        System.out.println("f-whatIsInTheCase");
         Room room=level.get(player.getPosition());
+        menu.display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"+room.toString()+"\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         if (Enemy.class.equals(room.getClass().getSuperclass())) {
             ((Enemy) room).sufferedAnAttack(player, menu,this);
         } else if (Chest.class.equals(room.getClass())) {
-            ((Chest) room).openChest(player,menu);
-        } else {
-            menu.display(room.toString());
+            openChest(player,room);
+        }
+    }
+
+    public void openChest(Hero player, Room room){
+
+        Chest chest=(Chest) room;
+        if(chest.getDefensive()!=null){
+            if(Objects.equals(player.getType(), chest.getDefensive().getType())){
+                if( player.getDefensive().getStats() < chest.getDefensive().getStats()) {
+                    player.setDefensive(chest.getDefensive());
+                  level.add(player.getPosition(),new Empty());////
+                }else{
+                    menu.display("# J'ai déjà mieux");
+                }
+            }else {
+                menu.display("# Ce n'est pas pour moi");
+            }
+        } else if (chest.getOffensive()!=null) {
+            if(Objects.equals(player.getType(), chest.getOffensive().getType())){
+                if( player.getOffensive().getStats() < chest.getOffensive().getStats()) {
+                    player.setOffensive(chest.getOffensive());
+                    level.add(player.getPosition(), new Empty() );////
+                }else{
+                    menu.display("# J'ai déjà mieux");
+                }
+            }else {
+                menu.display("# Ce n'est pas pour moi");
+            }
+        }else {
+            level.add(player.getPosition(), player.addHealToInventory(room,menu));////
         }
     }
 

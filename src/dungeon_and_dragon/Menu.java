@@ -19,7 +19,6 @@ public class Menu {
     }
 
     public void launchGame(Game game) {
-        System.out.println("f-launchGame");
 
         displayChoice("Bienvenus dans DONJON & DRAGON",
                 new String[]{"'1' pour lancer une partie",
@@ -33,7 +32,6 @@ public class Menu {
     }
 
     public void listenerChoice(Map<String, Runnable> functionChoiceMap) {
-        System.out.println("f-listenerChoice");
         String choice = scanner.nextLine();
         if (functionChoiceMap.containsKey(choice) && !choice.equals("666")) {
             functionChoiceMap.get(choice).run();
@@ -43,7 +41,6 @@ public class Menu {
     }
 
     public void selectNbrPlayers(Game game) {
-        System.out.println("f-selectNbrPlayers");
 
         displayChoice("Selection du nombre de joueur(s)",
                 new String[]{"'1' à '4' joueur(s)",
@@ -58,18 +55,15 @@ public class Menu {
         functionChoiceMap.put("666", () -> selectNbrPlayers(game));
         listenerChoice(functionChoiceMap);
         game.setStates(GameState.PREPARATION);
-        System.out.println("fin f-selectNbrPlayers");
     }
 
     public void selectCharacter(Game game, int nbrPlayers) {
-        System.out.println("f-selectCharacter");
         for (int i = 0; i < nbrPlayers; i++) {
             selectTypeHero(game);
         }
     }
 
     public void selectTypeHero(Game game) {
-        System.out.println("f-selectTypeHero");
         displayChoice("Selection de la classe de votre personnage",
                 new String[]{"'1' pour un Magicien",
                         "'2' pour un Guerrier",
@@ -84,7 +78,6 @@ public class Menu {
     }
 
     public void playerName(Game game, String type, String typeFr) {
-        System.out.println("f-playerName");
         displayChoice("Donner un nom à votre " + typeFr,
                 new String[]{"'0' pour quitter le jeu"});
         String name = scanner.nextLine();
@@ -98,7 +91,6 @@ public class Menu {
     }
 
     public void createHero(Game game, String type, String name) {
-        System.out.println("f-createHero");
         Hero player = switch (type) {
             case "Guerrier" -> new Warrior(name, 1, new Weapon("Glaive", 1), new Shield("Petit bouclier", 1), null);
             default -> new Wizard(name, 1, new Spell("Foudre", 1), new EnergyShield("Petit Philtre", 1), null);
@@ -108,12 +100,10 @@ public class Menu {
     }
 
     public void exitGame(Game game) {
-        System.out.println("f-exitGame");
         game.setStates(GameState.END);
     }
 
     public void displayChoice(String request, String[] choices) {
-        System.out.println("f-displayChoice");
         String msg = "######## - " + request + " - ########";
         for (String choice : choices) {
             msg += "\n#      -Taper: " + choice;
@@ -122,7 +112,6 @@ public class Menu {
     }
 
     public void display(String msg) {
-        System.out.println("f-display");
         System.out.println(msg);
     }
 

@@ -11,11 +11,20 @@ public abstract class Gear {
         this.stats = stats;
     }
 
-    public String toString() {
-        return "      " + name + ", " + stats ;
+    public String getType() {
+        return type;
     }
 
     public int getStats() {
         return stats;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String toString() {
+        return "      " + name + ", " + stats ;
+    }
+
 }
