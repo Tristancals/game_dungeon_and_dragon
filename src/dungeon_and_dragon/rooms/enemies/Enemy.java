@@ -1,5 +1,6 @@
 package dungeon_and_dragon.rooms.enemies;
 
+import dungeon_and_dragon.Game;
 import dungeon_and_dragon.Menu;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Room;
@@ -16,6 +17,8 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
     private int lifeMax;
     private int defense;
     private final java.util.Random rand = new java.util.Random();
+
+    private int position;
     ////////////////////////////////////////////////////////////////
 
     public Enemy(String type, String name, int level, int[] attack, int life,  int defense) {
@@ -32,7 +35,7 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
 
     ////////////////////////////////////////////////////////////////
 
-    public void sufferedAnAttack(SufferedAnAttack player, Menu menu) {
+    public void sufferedAnAttack(SufferedAnAttack player, Menu menu, Game game) {
         int damage =player.getDamages() ;
         if (rand.nextInt(6 - player.getDefense()) > 0) {
             setLife(getLife() - damage);
@@ -42,12 +45,11 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
             menu.display("# -Votre attaque à raté!!!");
         }
         if (getLife() > 0) {
-            player.sufferedAnAttack(this, menu);
+            player.sufferedAnAttack(this,menu,game);
         } else {
             menu.display(" \n#     #~#~#~#~#~# - VICTOIRE! - #~#~#~#~#~#" +
                     "\n# -Votre personnage a terrasser le " + this.getType() +
                     " " + this.getName() + "...");
-
         }
     }
 
@@ -103,6 +105,16 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
 
     public int getDefense() {
         return defense;
+    }
+
+    @Override
+    public int getPosition() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     ////////////////////////////////////////////////////////////////

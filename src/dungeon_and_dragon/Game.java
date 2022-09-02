@@ -1,6 +1,7 @@
 package dungeon_and_dragon;
 
 import dungeon_and_dragon.heros.Hero;
+import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Chest;
 import dungeon_and_dragon.rooms.Room;
 import dungeon_and_dragon.rooms.enemies.Enemy;
@@ -19,7 +20,7 @@ public class Game {
     private GameState states = GameState.START;//TODO PREPARATION START
     private final Menu menu;
     private int round = 0;
-
+    private int positionPlayerAtStart;
     private boolean gameInProgress = true;
 
     public Game(Menu menu) {
@@ -78,6 +79,7 @@ public class Game {
 
     public void initDungeon(int nbrRoom, int dungeonLevel) {
         this.nbrRoom = nbrRoom;
+        this.dungeonLevel=dungeonLevel;
         dungeon = new Dungeon(nbrRoom, dungeonLevel);
         level = dungeon.getLevel();
         System.out.println(level);
@@ -88,7 +90,7 @@ public class Game {
 
 
     public void playRound() {
-        System.out.println("f-playRound");
+        System.out.println("f-playRound ");
         round++;
         if (!allPlayerDead()) {
             int playerNbr = 0;
@@ -99,7 +101,8 @@ public class Game {
                             " de " + player.getName() +
                             " " + playerNbr + "/" + players.size() +
                             " - ########\n" + player);
-                    whatPlayerDoAtStart(player);
+                    whatDoesThePlayerDoInHisTurn(player);
+                    positionPlayerAtStart=player.getPosition();
                     playerMouve(player);
 
                     whatIsInTheCase(player);
@@ -118,13 +121,35 @@ public class Game {
             menu.display(players.toString());
         }
     }
-
-    public void whatPlayerDoAtStart(Hero player) {
+    public void tryRunAway(SufferedAnAttack player,SufferedAnAttack enemy ){
+        if(rand.nextInt(6)>(dungeonLevel-1)) {
+            menu.display("Vous parvenez à fuir en position: "+positionPlayerAtStart);
+            player.setPosition(positionPlayerAtStart);
+        }else {
+            menu.display("Vous rater votre fuite....");
+            player.sufferedAnAttack(enemy, menu, this);
+        }
+    }
+    public void whatDoesThePlayerDoDuringTheFight(SufferedAnAttack player,SufferedAnAttack enemy, Menu menu){
+        System.out.println("f-whatDoesThePlayerDoDuringTheFight");
+        menu.displayChoice("Que faite vous?",
+                new String[]{"'1' pour lancer une attaque",
+                "'2' pour tenter de fuir ...("+(6-dungeonLevel)+"/6 de réussit)",
+                "'0' pour quitter le jeu.."});
+        Map<String, Runnable> functionChoiceMap = new HashMap<>();
+        functionChoiceMap.put("1", () -> enemy.sufferedAnAttack(player, menu,this));
+        functionChoiceMap.put("2", () -> tryRunAway(player,enemy));
+        functionChoiceMap.put("0", () -> menu.exitGame(this));
+        functionChoiceMap.put("666", () -> whatDoesThePlayerDoDuringTheFight(player,enemy,menu));
+        menu.listenerChoice(functionChoiceMap);
+    }
+    public void whatDoesThePlayerDoInHisTurn(Hero player) {
         System.out.println("f-whatPlayerDo");
         List<String> choices = new ArrayList<>();
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
         functionChoiceMap.put("1", () -> playerMouve(player));
         choices.add("'1' pour lancer le dé");
+
         if (player.getLife() < player.getLifeMax()) {
             choices.add("'2' pour passer votre tour et regagner 1PV");
             functionChoiceMap.put("2", () -> playerStays(player));
@@ -133,11 +158,11 @@ public class Game {
             choices.add("'3' pour passer votre tour et consommer une potion");
             functionChoiceMap.put("3", () -> playerStaysAndTakeHeal(player));
         }
+
         choices.add("'0' pour quitter le jeu");
+        functionChoiceMap.put("666", () -> whatDoesThePlayerDoInHisTurn(player));
         functionChoiceMap.put("0", () -> menu.exitGame(this));
-
         String[] choicesArray = new String[choices.size()];
-
         menu.displayChoice("Que faite vous?", choices.toArray(choicesArray));
         menu.listenerChoice(functionChoiceMap);
     }
@@ -195,11 +220,9 @@ public class Game {
     }
     public void whatIsInTheCase(Hero player) {
         System.out.println("f-whatIsInTheCase");
-        System.out.println(level.get(player.getPosition()).getClass());
-        System.out.println(Enemy.class);//TODO class enemy/goblin/dragon/sorcerer!!!
         Room room=level.get(player.getPosition());
-        if (Enemy.class.equals(room.getClass())) {
-            ((Enemy) room).sufferedAnAttack(player, menu);
+        if (Enemy.class.equals(room.getClass().getSuperclass())) {
+            ((Enemy) room).sufferedAnAttack(player, menu,this);
         } else if (Chest.class.equals(room.getClass())) {
             ((Chest) room).openChest(player,menu);
         } else {

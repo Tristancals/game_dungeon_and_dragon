@@ -1,5 +1,6 @@
 package dungeon_and_dragon.heros;
 
+import dungeon_and_dragon.Game;
 import dungeon_and_dragon.Menu;
 import dungeon_and_dragon.gears.Defensive;
 import dungeon_and_dragon.gears.Heal;
@@ -43,7 +44,7 @@ public abstract class Hero implements SufferedAnAttack {
 
     }
 
-    public void sufferedAnAttack(SufferedAnAttack enemy, Menu menu) {
+    public void sufferedAnAttack(SufferedAnAttack enemy, Menu menu, Game game) {
         int damage = enemy.getDamages();
         if (rand.nextInt(6 - enemy.getDefense()) > 0) {
             setLife(getLife() - damage);
@@ -54,19 +55,19 @@ public abstract class Hero implements SufferedAnAttack {
                     + " à raté sont attaque!!!");
         }
         if (getLife() > 0) {
-            enemy.sufferedAnAttack(this, menu);
+            game.whatDoesThePlayerDoDuringTheFight(this,enemy,menu);
         } else {
             menu.display("# \n~~~~~~~~~ - YOU LOSE - ~~~~~~~~~" +
                     "\n# -Votre héro à mordu la poussière..." +
-                    "\n#                  //////" +
-                    "\n#       //////////////////////////" +
-                    "\n#         //////   " + this.getName() + "  //////" +
-                    "\n#     //////////////////////////" +
-                    "\n#              //////" +
-                    "\n#             //////" +
-                    "\n#            //////" +
-                    "\n#           //////" +
-                    "\n#          //////");
+                    "\n#            ||||||" +
+                    "\n#  ||||||||||||||||||||||||||" +
+                    "\n#  |||||| -" + this.getName() + "- ||||||" +
+                    "\n#  ||||||||||||||||||||||||||" +
+                    "\n#            ||||||" +
+                    "\n#            ||||||" +
+                    "\n#            ||||||" +
+                    "\n#            ||||||" +
+                    "\n#            ||||||");
         }
     }
     public boolean isALife() {
@@ -87,7 +88,7 @@ public abstract class Hero implements SufferedAnAttack {
         return new Heal("",0);
     }
 
-    ////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
     public String getType() {
         return type;
     }
