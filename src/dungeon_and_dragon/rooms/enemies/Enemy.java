@@ -5,17 +5,14 @@ import dungeon_and_dragon.Menu;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Room;
 
-import java.util.Arrays;
-import java.util.Random;
-
 public abstract class Enemy extends Room implements SufferedAnAttack {
-    private String type;
-    private String name;
-    private int level;
-    private int[] attack;
+    private final String type;
+    private final String name;
+    private final int level;
+    private final int[] attack;
     private int life;
     private int lifeMax;
-    private int defense;
+    private final int defense;
     private final java.util.Random rand = new java.util.Random();
 
     private int position;
@@ -75,18 +72,6 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
     public int[] getAttack() {
         return attack;
     }
@@ -95,12 +80,8 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
         return life;
     }
 
-    public void setLife(int life) {
+    private void setLife(int life) {
         this.life = life;
-    }
-
-    public int getLifeMax() {
-        return lifeMax;
     }
 
     public int getDefense() {
@@ -122,8 +103,8 @@ public abstract class Enemy extends Room implements SufferedAnAttack {
     public String toString() {
         return "\n######### - FICHE ENNEMI - #########" +
                 "\n# Le " + type + " nommer " + name + ", niveau " + level +
-                "\n# " + life + "/"+getLifeMax()+"PV, attaque " + attack[0] + "-" +attack[1] +
-                "}\n####################################\n";
+                "\n# " + life + "/"+lifeMax+"PV, attaque " + attack[0] + "-" +attack[1] +
+                "}\n####################################";
     }
 
 }

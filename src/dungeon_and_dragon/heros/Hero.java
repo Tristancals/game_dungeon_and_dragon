@@ -15,13 +15,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Hero implements SufferedAnAttack {
-    private String type;
-    private String name;
-    private int level;
+    private final String type;
+    private final String name;
+    private final int level;
     private int life;
-    private int lifeMax;
+    private final int lifeMax;
     private int position;
-    private int[] attack;
+    private final int[] attack;
     private int defense;
     private Offensive offensive;
     private Defensive defensive;
@@ -111,7 +111,7 @@ public abstract class Hero implements SufferedAnAttack {
         return inventory;
     }
 
-    public boolean playerHasAlreadyThisHeal(Heal potion) {
+    private boolean playerHasAlreadyThisHeal(Heal potion) {
         for (Heal p : this.inventory) {
             if ( p.equals(potion)){
                 return true;
@@ -141,18 +141,6 @@ public abstract class Hero implements SufferedAnAttack {
         return name;
     }
 
-    private void setName(String name) {
-        this.name = name;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    private void setLevel(int level) {
-        this.level = level;
-    }
-
     public int getLife() {
         return life;
     }
@@ -165,10 +153,6 @@ public abstract class Hero implements SufferedAnAttack {
         return lifeMax;
     }
 
-    private void setLifeMax(int lifeMax) {
-        this.lifeMax = lifeMax;
-    }
-
     public int getPosition() {
         return position;
     }
@@ -177,20 +161,12 @@ public abstract class Hero implements SufferedAnAttack {
         this.position = position;
     }
 
-    public int[] getAttack() {
+    protected int[] getAttack() {
         return attack;
-    }
-
-    private void setAttack(int[] attack) {
-        this.attack = attack;
     }
 
     public int getDefense() {
         return defense;
-    }
-
-    private void setDefense(int defense) {
-        this.defense = defense;
     }
 
     public Offensive getOffensive() {

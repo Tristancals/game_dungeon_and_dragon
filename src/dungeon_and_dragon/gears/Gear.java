@@ -15,12 +15,12 @@ public abstract class Gear {
         return type;
     }
 
-    public int getStats() {
-        return stats;
-    }
-
     public String getName() {
         return name;
+    }
+
+    public int getStats() {
+        return stats;
     }
 
     public String toString() {

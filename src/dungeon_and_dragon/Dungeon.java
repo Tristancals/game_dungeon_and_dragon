@@ -13,11 +13,11 @@ import java.util.List;
 
 public class Dungeon {
 
-    private int nbrRoom;
+    private final int nbrRoom;
 
-    private List<Room> level = new ArrayList<>();
+    private final List<Room> level = new ArrayList<>();
 
-    private int dungeonLevel;
+    private final int dungeonLevel;
     private final List<String> listNames = Arrays.asList("Lynn", "Vaughan", "Dunlap", "Carmella", "Gloria", "Krista", "Haynes", "Pitts", "Norma", "Andrews", "Bernadine", "Miranda", "Tyler", "Rowland", "Jeanne", "Bridgett", "Elvira", "Emily", "Carr", "Adrian", "Ann", "Sargent", "Morrison", "Grant", "Ethel", "Hodge", "Jenifer", "Cunningham", "Pace", "Juliana", "Mcdowell", "Mcdowell", "Zimmerman", "Aline");
     private final java.util.Random rand = new java.util.Random();
 
@@ -27,7 +27,7 @@ public class Dungeon {
         initDungeon();
     }
 
-    public void initDungeon() {
+    private void initDungeon() {
         for (int i = 0; i < nbrRoom; i++) {
             if (i == 0) {
                 level.add(new Empty());
@@ -42,7 +42,7 @@ public class Dungeon {
         level.add(new Dragon("Le grand "+setMonsterName(), dungeonLevel+3));
     }
 
-    public Room selectMonster() {
+    private Room selectMonster() {
         String name = setMonsterName();
         return switch (rand.nextInt(6)) {
             case 0, 1, 2 -> new Goblin(name, dungeonLevel);
@@ -51,11 +51,11 @@ public class Dungeon {
         };
     }
 
-    public String setMonsterName() {
+    private String setMonsterName() {
         return this.listNames.get(rand.nextInt(this.listNames.size()));
     }
 
-    public List<Room> getLevel() {
+    protected List<Room> getLevel() {
         return level;
     }
 }

@@ -18,7 +18,7 @@ public class Menu {
     public Menu() {
     }
 
-    public void launchGame(Game game) {
+    protected void launchGame(Game game) {
 
         displayChoice("Bienvenus dans DONJON & DRAGON",
                 new String[]{"'1' pour lancer une partie",
@@ -40,7 +40,7 @@ public class Menu {
         }
     }
 
-    public void selectNbrPlayers(Game game) {
+    private void selectNbrPlayers(Game game) {
 
         displayChoice("Selection du nombre de joueur(s)",
                 new String[]{"'1' à '4' joueur(s)",
@@ -57,13 +57,13 @@ public class Menu {
         game.setStates(GameState.PREPARATION);
     }
 
-    public void selectCharacter(Game game, int nbrPlayers) {
+    private void selectCharacter(Game game, int nbrPlayers) {
         for (int i = 0; i < nbrPlayers; i++) {
             selectTypeHero(game);
         }
     }
 
-    public void selectTypeHero(Game game) {
+    private void selectTypeHero(Game game) {
         displayChoice("Selection de la classe de votre personnage",
                 new String[]{"'1' pour un Magicien",
                         "'2' pour un Guerrier",
@@ -77,7 +77,7 @@ public class Menu {
         listenerChoice(functionChoiceMap);
     }
 
-    public void playerName(Game game, String type, String typeFr) {
+    private void playerName(Game game, String type, String typeFr) {
         displayChoice("Donner un nom à votre " + typeFr,
                 new String[]{"'0' pour quitter le jeu"});
         String name = scanner.nextLine();
@@ -90,14 +90,15 @@ public class Menu {
         }
     }
 
-    public void createHero(Game game, String type, String name) {
+    private void createHero(Game game, String type, String name) {
+        System.out.println(type);
         Hero player = switch (type) {
-            case "Guerrier" -> new Warrior(name, 1, new Weapon("Glaive", 1), new Shield("Petit bouclier", 1), null);
+            case "Warrior" -> new Warrior(name, 1, new Weapon("Glaive", 1), new Shield("Petit bouclier", 1), null);
             default -> new Wizard(name, 1, new Spell("Foudre", 1), new EnergyShield("Petit Philtre", 1), null);
         };
         game.addPlayers(player);
-        System.out.println(game.getPlayers());
-    }
+        display("# Joueur crée:\n"+player.toString());
+        }
 
     public void exitGame(Game game) {
         game.setStates(GameState.END);
