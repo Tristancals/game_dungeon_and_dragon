@@ -3,23 +3,22 @@ package dungeon_and_dragon;
 import dungeon_and_dragon.exceptions.PlayerOutOfBoardException;
 import dungeon_and_dragon.heros.Hero;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
-import dungeon_and_dragon.rooms.Chest;
-import dungeon_and_dragon.rooms.Empty;
-import dungeon_and_dragon.rooms.Room;
-import dungeon_and_dragon.rooms.enemies.Corpse;
-import dungeon_and_dragon.rooms.enemies.Enemy;
+import dungeon_and_dragon.interfaces.Interactable;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 
 
 public class Game {
 
     private final java.util.Random rand = new java.util.Random();
-    private List<Room> level = new ArrayList<>();
+    private List<Interactable> level = new ArrayList<>();
     private int nbrRoom;
     private final List<Hero> players = new ArrayList<>();
     private int dungeonLevel;
-    private GameState states = GameState.START;//TODO PREPARATION START
+    private GameState states = GameState.START;
     private final Menu menu;
     private int round = 0;
     private int positionPlayerAtStart;
@@ -59,6 +58,7 @@ public class Game {
                     break;
                 case END:
                     System.out.println("---END---");
+//                    savePlayers();
                     gameInProgress = false;
                     ///
                     break;
@@ -66,8 +66,18 @@ public class Game {
         }
     }
 
+//    public void savePlayers() {
+//        Controller connect = new Controller();
+//
+//        Connection con = connect.connection;
+//        Statement stmt=con.createStatement();
+//        ResultSet rs=stmt.executeQuery("select * from emp");
+//
+//        connect.closeConnection();
+//    }
+
     /**
-     * permet de choisir la difficulté
+     * Permet de choisir la difficulté
      * change le nombre de pieces à visiter dans le donjon
      * et le niveau des monstres présent dans celui-ci
      */
@@ -107,7 +117,7 @@ public class Game {
     ///////////////////////////////////////////////
 
     /**
-     * fonction qui va se répéter jusqu'à la fin de la partie
+     * Fonction qui va se répéter jusqu'à la fin de la partie
      * permet d'effectuer le tour de jeu des joueurs un à un
      * round ==> compter le nombre de tours de la partie
      * allPlayerDead() ==> savoir si il reste un joueur en vie dans l'équipe
@@ -270,8 +280,6 @@ public class Game {
             player.setPosition(positionPlayer);
             System.out.println(positionPlayer);
             throw new PlayerOutOfBoardException("Un vortex la téléporter en position: " + positionPlayer);
-        } else {
-
         }
     }
 
@@ -290,6 +298,7 @@ public class Game {
         } catch (PlayerOutOfBoardException e) {
             menu.display(e.getMessage());
         }
+
         if (positionPlayer == this.nbrRoom) {
             // TODO partie fini à la fin du tour proposer une nouvelle partie
             gameInProgress = false;
@@ -330,57 +339,17 @@ public class Game {
      * @param player
      */
     private void whatIsInTheCase(Hero player) {
-        Room room = level.get(player.getPosition());
+
+        Interactable room = level.get(player.getPosition());
+
         menu.display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
                 room.toString() +
                 "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        if (Enemy.class.equals(room.getClass().getSuperclass()) && ((Enemy) room).getLife() > 0) {
-            ((Enemy) room).sufferedAnAttack(player, menu, this);
-            if (((Enemy) room).getLife() <= 0) {
-                level.set(player.getPosition(),
-                        new Corpse(((Enemy) room).getType(), ((Enemy) room).getName()));
-            }
-        } else if (Chest.class.equals(room.getClass())) {
-            openChest(player, room);
-        }
+        room.interact(player, menu, this);
+
+
     }
 
-    /**
-     * selon le contenu du coffre et du joueur
-     * le joueur s'équipe avec l'équipement present
-     * ou ajoute à son inventaire le soin
-     *
-     * @param player
-     * @param room
-     */
-    private void openChest(Hero player, Room room) {
-        Chest chest = (Chest) room;
-        if (chest.getDefensive() != null) {
-            if (Objects.equals(player.getType(), chest.getDefensive().getType())) {
-                if (player.getDefensive().getStats() < chest.getDefensive().getStats()) {
-                    player.setDefensive(chest.getDefensive());
-                    level.set(player.getPosition(), new Empty());////
-                } else {
-                    menu.display("# J'ai déjà mieux");
-                }
-            } else {
-                menu.display("# Ce n'est pas pour moi");
-            }
-        } else if (chest.getOffensive() != null) {
-            if (Objects.equals(player.getType(), chest.getOffensive().getType())) {
-                if (player.getOffensive().getStats() < chest.getOffensive().getStats()) {
-                    player.setOffensive(chest.getOffensive());
-                    level.set(player.getPosition(), new Empty());////
-                } else {
-                    menu.display("# J'ai déjà mieux");
-                }
-            } else {
-                menu.display("# Ce n'est pas pour moi");
-            }
-        } else {
-            level.set(player.getPosition(), player.addHealToInventory(room, menu));////
-        }
-    }
 
     /**
      * lors du lancement de la partie cette fonction ajoute un joueur
@@ -399,5 +368,13 @@ public class Game {
      */
     protected void setStates(GameState states) {
         this.states = states;
+    }
+
+    public void setLevel(Interactable room, int index) {
+        this.level.set(index, room);
+    }
+
+    public List<Interactable> getLevel() {
+        return level;
     }
 }

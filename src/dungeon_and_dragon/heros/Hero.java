@@ -8,7 +8,7 @@ import dungeon_and_dragon.gears.Offensive;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Chest;
 import dungeon_and_dragon.rooms.Empty;
-import dungeon_and_dragon.rooms.Room;
+import dungeon_and_dragon.interfaces.Interactable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,7 +119,7 @@ public abstract class Hero implements SufferedAnAttack {
         return false;
     }
 
-    public Room addHealToInventory(Room room,Menu menu) {
+    public Interactable addHealToInventory(Interactable room, Menu menu) {
         Heal potion = ((Chest) room).getHeal();
         if (!playerHasAlreadyThisHeal(potion)) {
             inventory.add(potion);
