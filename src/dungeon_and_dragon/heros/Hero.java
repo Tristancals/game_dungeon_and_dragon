@@ -61,7 +61,6 @@ public abstract class Hero implements SufferedAnAttack {
                         setLife((Math.min(getLife() + potion.getStats(), getLifeMax())));
                         this.inventory.remove(potion);
                     });
-
         }
         menu.displayChoice("Choisir une potion:", choices);
         menu.listenerChoice(functionChoiceMap);

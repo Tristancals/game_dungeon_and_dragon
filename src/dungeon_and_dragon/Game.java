@@ -1,5 +1,6 @@
 package dungeon_and_dragon;
 
+import dungeon_and_dragon.exceptions.PlayerOutOfBoardException;
 import dungeon_and_dragon.heros.Hero;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Chest;
@@ -30,6 +31,14 @@ public class Game {
     }
 
 
+    /**
+     * Fonction qui boucle sur les ENUMS et permet l'avancement du jeu
+     * START => création de l'équipe de hero
+     * PREPARATION => mise en place du donjon
+     * GAME => déroulement de la partie
+     * END => fin de partie.. soit par la sortie d'un hero du donjon..
+     * Soit par la mort de toute l'équipe
+     */
     private void start() {
         while (gameInProgress) {
             switch (this.states) {
@@ -46,11 +55,7 @@ public class Game {
                             ~~~~~~~~~~ - DEBUT DE LA PARTIE - ~~~~~~~~~~
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             """);
-                    playRound();
-                    break;
-                case CONCLUSION:
-                    System.out.println("---CONCLUSION---");
-                    ////
+                    playRoundTeam();
                     break;
                 case END:
                     System.out.println("---END---");
@@ -61,8 +66,12 @@ public class Game {
         }
     }
 
+    /**
+     * permet de choisir la difficulté
+     * change le nombre de pieces à visiter dans le donjon
+     * et le niveau des monstres présent dans celui-ci
+     */
     private void selectDifficultyDungeon() {
-
         menu.displayChoice("Sélectionner la difficulté",
                 new String[]{"'1' pour une petite balade..(facile)",
                         "'2' pour une petite aventure..(moyenne)",
@@ -79,6 +88,14 @@ public class Game {
         menu.listenerChoice(functionChoiceMap);
     }
 
+    /**
+     * Fonction pour créer une instance d'un Dungeon
+     * qui va créer une collection de Room avec comme valeur Chest/Empty/Enemy
+     * et une fois réaliser il lance la partie
+     *
+     * @param nbrRoom
+     * @param dungeonLevel
+     */
     private void initDungeon(int nbrRoom, int dungeonLevel) {
         this.nbrRoom = nbrRoom;
         this.dungeonLevel = dungeonLevel;
@@ -89,8 +106,20 @@ public class Game {
 
     ///////////////////////////////////////////////
 
-
-    private void playRound() {
+    /**
+     * fonction qui va se répéter jusqu'à la fin de la partie
+     * permet d'effectuer le tour de jeu des joueurs un à un
+     * round ==> compter le nombre de tours de la partie
+     * allPlayerDead() ==> savoir si il reste un joueur en vie dans l'équipe
+     * playerNbr ==> savoir le numéro du joueur qui joue son tour
+     * player.isALife() ==> savoir si le joueur sélectionner est vivant..
+     * whatDoesThePlayerDoInHisTurn(player) ==> laisser le choix au joueur en début de tour
+     * avancer ou de soigner (ou quitter le jeu)
+     * positionPlayerAtStart ==> enregistrer la position du joueur au début de son tour
+     * whatIsInTheCase(player) ==> fonction qui vas proposer une action en fonction de la Room
+     * gameInProgress ==> boolean qui permet de mettre fin à la partie
+     */
+    private void playRoundTeam() {
         round++;
         if (!allPlayerDead()) {
             int playerNbr = 0;
@@ -130,7 +159,7 @@ public class Game {
                                                 
                         """);
             }
-            playRound();
+            playRoundTeam();
         } else {
             menu.display("""
 
@@ -146,16 +175,16 @@ public class Game {
         }
     }
 
-    private void tryRunAway(SufferedAnAttack player, SufferedAnAttack enemy) {
-        if (rand.nextInt(6) > (dungeonLevel - 1)) {
-            menu.display("Vous parvenez à fuir en position: " + positionPlayerAtStart);
-            player.setPosition(positionPlayerAtStart);
-        } else {
-            menu.display("Vous rater votre fuite....");
-            player.sufferedAnAttack(enemy, menu, this);
-        }
-    }
-
+    /**
+     * fonction appeler apres avoir subi une attaque
+     * permet de continuer le combat en attaquant ==> enemy.sufferedAnAttack(player, menu, this)
+     * de fuir => tryRunAway(SufferedAnAttack player, SufferedAnAttack enemy)
+     * ou quitter le jeu ==> menu.exitGame(this)
+     *
+     * @param player
+     * @param enemy
+     * @param menu
+     */
     public void whatDoesThePlayerDoDuringTheFight(SufferedAnAttack player, SufferedAnAttack enemy, Menu menu) {
         menu.displayChoice("Combat",
                 new String[]{"'1' pour lancer une attaque",
@@ -169,6 +198,32 @@ public class Game {
         menu.listenerChoice(functionChoiceMap);
     }
 
+    /**
+     * Fonction qui permet la fuite d'un joueur lors d'un combat mal engager..
+     * avec un peu de chance...
+     *
+     * @param player
+     * @param enemy
+     */
+    private void tryRunAway(SufferedAnAttack player, SufferedAnAttack enemy) {
+        if (rand.nextInt(6) > (dungeonLevel - 1)) {
+            menu.display("Vous parvenez à fuir en position: " + positionPlayerAtStart);
+            player.setPosition(positionPlayerAtStart);
+        } else {
+            menu.display("Vous rater votre fuite....");
+            player.sufferedAnAttack(enemy, menu, this);
+        }
+    }
+
+    /**
+     * au début du tour de chaque joueur nous lui proposons
+     * d'avancer ==> playerMouve(player)
+     * de se soigner ==> playerStays(player) / playerStaysAndTakeHeal(player)
+     * (sauter un tour 1pv / ou si present consommer une potion)
+     * ou quitter le jeu
+     *
+     * @param player
+     */
     private void whatDoesThePlayerDoInHisTurn(Hero player) {
         List<String> choices = new ArrayList<>();
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
@@ -191,12 +246,33 @@ public class Game {
         menu.listenerChoice(functionChoiceMap);
     }
 
+    /**
+     * le joueur récupère 1 PV
+     *
+     * @param player
+     */
     private void playerStays(Hero player) {
         player.setLife(player.getLife() + 1);
     }
 
+    /**
+     * envois vers le menu de selection d'une potion
+     *
+     * @param player
+     */
     private void playerStaysAndTakeHeal(Hero player) {
         player.selectHeal(menu);
+    }
+
+    private void playerWrongWay(Hero player, int positionPlayer, int dieRoll) throws PlayerOutOfBoardException {
+        if (positionPlayer > this.nbrRoom) {
+            positionPlayer -= (dieRoll * rand.nextInt(dieRoll / 2) + dieRoll);
+            player.setPosition(positionPlayer);
+            System.out.println(positionPlayer);
+            throw new PlayerOutOfBoardException("Un vortex la téléporter en position: " + positionPlayer);
+        } else {
+
+        }
     }
 
     private void playerMouve(Hero player) {
@@ -208,19 +284,24 @@ public class Game {
                 "\n# " + (positionPlayer <= this.nbrRoom ?
                 "Se qui l'amène dans la pieces: " + positionPlayer :
                 ""));
-        if (positionPlayer > this.nbrRoom) {
-            // TODO exception personnage hors limite
-            positionPlayer -= (dieRoll * rand.nextInt(dieRoll / 2) + dieRoll);
-            menu.display("Un vortex la téléporter en position: " + positionPlayer);
-        } else if (positionPlayer == this.nbrRoom) {
+        try {
+            playerWrongWay(player, positionPlayer, dieRoll);
+            player.setPosition(positionPlayer);
+        } catch (PlayerOutOfBoardException e) {
+            menu.display(e.getMessage());
+        }
+        if (positionPlayer == this.nbrRoom) {
             // TODO partie fini à la fin du tour proposer une nouvelle partie
-//            displayPlayerGetOut(player);
             gameInProgress = false;
         }
-        player.setPosition(positionPlayer);
     }
 
 
+    /**
+     * Fonction qui permet de vérifier si toute l'équipe est mort..
+     *
+     * @return
+     */
     private boolean allPlayerDead() {
         int count = 0;
         for (Hero player :
@@ -233,10 +314,21 @@ public class Game {
     }
 
 
+    /**
+     * fonction qui simule un dé à 6 faces
+     *
+     * @return
+     */
     private int dieRoll() {
         return 1 + rand.nextInt(6);
     }
 
+    /**
+     * Fonction qui selon le contenu de la pieces appel une fonction pour interagir avec
+     * et changer l'état de celle-ci selon l'interaction
+     *
+     * @param player
+     */
     private void whatIsInTheCase(Hero player) {
         Room room = level.get(player.getPosition());
         menu.display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
@@ -245,7 +337,7 @@ public class Game {
         if (Enemy.class.equals(room.getClass().getSuperclass()) && ((Enemy) room).getLife() > 0) {
             ((Enemy) room).sufferedAnAttack(player, menu, this);
             if (((Enemy) room).getLife() <= 0) {
-                level.add(player.getPosition(),
+                level.set(player.getPosition(),
                         new Corpse(((Enemy) room).getType(), ((Enemy) room).getName()));
             }
         } else if (Chest.class.equals(room.getClass())) {
@@ -253,14 +345,21 @@ public class Game {
         }
     }
 
+    /**
+     * selon le contenu du coffre et du joueur
+     * le joueur s'équipe avec l'équipement present
+     * ou ajoute à son inventaire le soin
+     *
+     * @param player
+     * @param room
+     */
     private void openChest(Hero player, Room room) {
-
         Chest chest = (Chest) room;
         if (chest.getDefensive() != null) {
             if (Objects.equals(player.getType(), chest.getDefensive().getType())) {
                 if (player.getDefensive().getStats() < chest.getDefensive().getStats()) {
                     player.setDefensive(chest.getDefensive());
-                    level.add(player.getPosition(), new Empty());////
+                    level.set(player.getPosition(), new Empty());////
                 } else {
                     menu.display("# J'ai déjà mieux");
                 }
@@ -271,7 +370,7 @@ public class Game {
             if (Objects.equals(player.getType(), chest.getOffensive().getType())) {
                 if (player.getOffensive().getStats() < chest.getOffensive().getStats()) {
                     player.setOffensive(chest.getOffensive());
-                    level.add(player.getPosition(), new Empty());////
+                    level.set(player.getPosition(), new Empty());////
                 } else {
                     menu.display("# J'ai déjà mieux");
                 }
@@ -279,14 +378,25 @@ public class Game {
                 menu.display("# Ce n'est pas pour moi");
             }
         } else {
-            level.add(player.getPosition(), player.addHealToInventory(room, menu));////
+            level.set(player.getPosition(), player.addHealToInventory(room, menu));////
         }
     }
 
+    /**
+     * lors du lancement de la partie cette fonction ajoute un joueur
+     * à l'attribut players
+     *
+     * @param player
+     */
     protected void addPlayers(Hero player) {
         this.players.add(player);
     }
 
+    /**
+     * permet selon l'avancement de la partie de switch les ENUMS
+     *
+     * @param states
+     */
     protected void setStates(GameState states) {
         this.states = states;
     }
