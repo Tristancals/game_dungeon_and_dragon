@@ -140,6 +140,10 @@ public abstract class Hero implements SufferedAnAttack {
         return name;
     }
 
+    public int getLevel() {
+        return level;
+    }
+
     public int getLife() {
         return life;
     }
@@ -184,6 +188,9 @@ public abstract class Hero implements SufferedAnAttack {
         this.defensive = defensive;
     }
 
+    public ArrayList<Heal> getInventory() {
+        return inventory;
+    }
 
     ////////////////////////////////////////////////////////////////
 

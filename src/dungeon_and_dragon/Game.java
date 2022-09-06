@@ -1,12 +1,15 @@
 package dungeon_and_dragon;
 
 import dungeon_and_dragon.exceptions.PlayerOutOfBoardException;
+import dungeon_and_dragon.gears.Gear;
+import dungeon_and_dragon.gears.Heal;
 import dungeon_and_dragon.heros.Hero;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.interfaces.Interactable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
@@ -40,6 +43,7 @@ public class Game {
      */
     private void start() {
         while (gameInProgress) {
+            System.out.println("switch");
             switch (this.states) {
                 case START:
                     menu.launchGame(this);
@@ -58,23 +62,99 @@ public class Game {
                     break;
                 case END:
                     System.out.println("---END---");
-//                    savePlayers();
-                    gameInProgress = false;
+                    savePlayers();
                     ///
                     break;
             }
         }
     }
 
-//    public void savePlayers() {
-//        Controller connect = new Controller();
-//
-//        Connection con = connect.connection;
-//        Statement stmt=con.createStatement();
-//        ResultSet rs=stmt.executeQuery("select * from emp");
-//
-//        connect.closeConnection();
-//    }
+    public void savePlayers() {
+        Controller controller = new Controller();
+
+        Connection connection = controller.getConnection();
+        try {
+
+//            Class.forName("com.mysql.cj.jdbc.Driver");                          // lien avec la dependence .jar
+
+            Statement statement = connection.createStatement();
+
+
+            for (Hero player : players) {
+                String heroName = player.getName();
+                String heroType = player.getType();
+                int heroLevel = player.getLevel();
+
+
+                Gear gearOf = player.getOffensive();
+                String gearOfName = gearOf.getName();
+                String gearOfType = gearOf.getType();
+                int gearOfStats = gearOf.getStats();
+                System.out.println(gearOfStats+" "+gearOfName+" "+gearOfType);
+                String sql = "INSERT INTO gear(gear_name,gear_type,gear_stats) VALUES ('" +
+                        gearOfName + "','" + gearOfType + "'," + gearOfStats + ");";
+                statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
+
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+                int id_gearOf=0;
+                if (generatedKeys.next()) {
+                     id_gearOf = generatedKeys.getInt(1);
+                    System.out.println(sql +" "+id_gearOf);
+                }
+
+                Gear gearDef = player.getDefensive();
+                String gearDefName = gearDef.getName();
+                String gearDefType = gearDef.getType();
+                int gearDefStats = gearDef.getStats();
+                sql = "INSERT INTO gear(gear_name,gear_type,gear_stats) VALUES ('" +
+                        gearDefName + "','" + gearDefType + "'," + gearDefStats + ");";
+                statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
+                generatedKeys = statement.getGeneratedKeys();
+                int id_gearDef=0;
+                if (generatedKeys.next()) {
+                     id_gearDef = generatedKeys.getInt(1);
+                    System.out.println(sql + " " + id_gearDef);
+                }
+
+                sql = "INSERT INTO hero(hero_name,hero_type,hero_level,id_gear_def,id_gear_of) VALUES ('" +
+                        heroName + "','" + heroType + "'," + heroLevel + "," + id_gearDef + "," + id_gearOf + ");";
+                statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
+                generatedKeys = statement.getGeneratedKeys();
+                int id_hero=0;
+                if (generatedKeys.next()) {
+                     id_hero = generatedKeys.getInt(1);
+                    System.out.println(sql + " " + id_hero);
+                }
+
+                ArrayList<Heal> inventory = player.getInventory();
+                for (Heal potion : inventory) {
+                    int gearStats = potion.getStats();
+                    String gearName = potion.getName();
+                    String gearType = potion.getType();
+                    sql = "INSERT INTO gear(gear_name,gear_type,gear_stats) VALUES ('" +
+                            gearName + "','" + gearType + "'," + gearStats + ");";
+                    statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
+                    generatedKeys = statement.getGeneratedKeys();
+                    int id_potion=0;
+                    if (generatedKeys.next()) {
+                         id_potion = generatedKeys.getInt(1);
+                        System.out.println(sql + " " + id_potion);
+                    }
+
+                    sql = "INSERT INTO inventory(id_hero,id_gear_heal) VALUES (" +
+                            id_hero + "," + id_potion + ");";
+                    statement.executeUpdate(sql);
+                    System.out.println(sql);
+
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+//        controller.closeConnection();
+    }
 
     /**
      * Permet de choisir la difficulté
@@ -181,6 +261,8 @@ public class Game {
                                             
                                             
                     """);
+            setStates(GameState.END);
+            savePlayers();
             menu.display(players.toString());
         }
     }
@@ -299,8 +381,9 @@ public class Game {
             menu.display(e.getMessage());
         }
 
-        if (positionPlayer == this.nbrRoom) {
+        if (positionPlayer == this.nbrRoom && player.isALife()) {
             // TODO partie fini à la fin du tour proposer une nouvelle partie
+            setStates(GameState.END);
             gameInProgress = false;
         }
     }
@@ -330,6 +413,7 @@ public class Game {
      */
     private int dieRoll() {
         return 1 + rand.nextInt(6);
+//        return 40;
     }
 
     /**
