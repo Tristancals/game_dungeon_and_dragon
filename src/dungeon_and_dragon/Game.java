@@ -26,7 +26,7 @@ public class Game {
     private int round = 0;
     private int positionPlayerAtStart;
     private boolean gameInProgress = true;
-
+private Controller controller=new Controller();
     public Game(Menu menu) {
         this.menu = menu;
         start();
@@ -62,99 +62,14 @@ public class Game {
                     break;
                 case END:
                     System.out.println("---END---");
-                    savePlayers();
+                    controller.insertPlayers(this.players);
                     ///
                     break;
             }
         }
     }
 
-    public void savePlayers() {
-        Controller controller = new Controller();
 
-        Connection connection = controller.getConnection();
-        try {
-
-//            Class.forName("com.mysql.cj.jdbc.Driver");                          // lien avec la dependence .jar
-
-            Statement statement = connection.createStatement();
-
-
-            for (Hero player : players) {
-                String heroName = player.getName();
-                String heroType = player.getType();
-                int heroLevel = player.getLevel();
-
-
-                Gear gearOf = player.getOffensive();
-                String gearOfName = gearOf.getName();
-                String gearOfType = gearOf.getType();
-                int gearOfStats = gearOf.getStats();
-                System.out.println(gearOfStats+" "+gearOfName+" "+gearOfType);
-                String sql = "INSERT INTO gear(gear_name,gear_type,gear_stats) VALUES ('" +
-                        gearOfName + "','" + gearOfType + "'," + gearOfStats + ");";
-                statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
-
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                int id_gearOf=0;
-                if (generatedKeys.next()) {
-                     id_gearOf = generatedKeys.getInt(1);
-                    System.out.println(sql +" "+id_gearOf);
-                }
-
-                Gear gearDef = player.getDefensive();
-                String gearDefName = gearDef.getName();
-                String gearDefType = gearDef.getType();
-                int gearDefStats = gearDef.getStats();
-                sql = "INSERT INTO gear(gear_name,gear_type,gear_stats) VALUES ('" +
-                        gearDefName + "','" + gearDefType + "'," + gearDefStats + ");";
-                statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
-                generatedKeys = statement.getGeneratedKeys();
-                int id_gearDef=0;
-                if (generatedKeys.next()) {
-                     id_gearDef = generatedKeys.getInt(1);
-                    System.out.println(sql + " " + id_gearDef);
-                }
-
-                sql = "INSERT INTO hero(hero_name,hero_type,hero_level,id_gear_def,id_gear_of) VALUES ('" +
-                        heroName + "','" + heroType + "'," + heroLevel + "," + id_gearDef + "," + id_gearOf + ");";
-                statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
-                generatedKeys = statement.getGeneratedKeys();
-                int id_hero=0;
-                if (generatedKeys.next()) {
-                     id_hero = generatedKeys.getInt(1);
-                    System.out.println(sql + " " + id_hero);
-                }
-
-                ArrayList<Heal> inventory = player.getInventory();
-                for (Heal potion : inventory) {
-                    int gearStats = potion.getStats();
-                    String gearName = potion.getName();
-                    String gearType = potion.getType();
-                    sql = "INSERT INTO gear(gear_name,gear_type,gear_stats) VALUES ('" +
-                            gearName + "','" + gearType + "'," + gearStats + ");";
-                    statement.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
-                    generatedKeys = statement.getGeneratedKeys();
-                    int id_potion=0;
-                    if (generatedKeys.next()) {
-                         id_potion = generatedKeys.getInt(1);
-                        System.out.println(sql + " " + id_potion);
-                    }
-
-                    sql = "INSERT INTO inventory(id_hero,id_gear_heal) VALUES (" +
-                            id_hero + "," + id_potion + ");";
-                    statement.executeUpdate(sql);
-                    System.out.println(sql);
-
-                }
-            }
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-//        controller.closeConnection();
-    }
 
     /**
      * Permet de choisir la difficulté
@@ -262,7 +177,7 @@ public class Game {
                                             
                     """);
             setStates(GameState.END);
-            savePlayers();
+            controller.insertPlayers(players);
             menu.display(players.toString());
         }
     }
