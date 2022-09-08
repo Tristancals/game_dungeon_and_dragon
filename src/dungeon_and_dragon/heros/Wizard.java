@@ -5,10 +5,10 @@ import dungeon_and_dragon.gears.*;
 import java.util.ArrayList;
 
 public class Wizard extends Hero {
-    public Wizard(String name, int level, Offensive offensive,
+    public Wizard(int id,String name, int level, Offensive offensive,
                    Defensive defensive, ArrayList<Heal> inventory) {
 
-        super("Magicien",
+        super(id,"Magicien",
                 name, level,
                 8,
                 new int[]{8, 15},

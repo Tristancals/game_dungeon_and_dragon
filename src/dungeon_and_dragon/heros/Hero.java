@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Hero implements SufferedAnAttack {
+    private int id;
     private final String type;
     private final String name;
     private final int level;
@@ -30,9 +31,10 @@ public abstract class Hero implements SufferedAnAttack {
 
     ////////////////////////////////////////////////////////////////
 
-    public Hero(String type, String name, int level,
+    public Hero(int id,String type, String name, int level,
                 int life, int[] attack,
                 Offensive offensive, Defensive defensive, ArrayList<Heal> inventory) {
+        this.id=id;
         this.type = type;
         this.name = name;
         this.level = level;

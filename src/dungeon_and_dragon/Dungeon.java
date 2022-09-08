@@ -40,10 +40,6 @@ public class Dungeon {
             }
         }
         level.add(new Dragon("Le grand "+setMonsterName(), dungeonLevel+3));
-        for (int i = 0; i < level.size(); i++) {
-            System.out.println(i);
-            System.out.println(level.get(i));
-        }
     }
 
     private Interactable selectMonster() {

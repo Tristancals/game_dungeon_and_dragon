@@ -9,6 +9,7 @@ import dungeon_and_dragon.heros.Warrior;
 import dungeon_and_dragon.heros.Wizard;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -132,7 +133,10 @@ public class Menu {
     public void exitGame(Game game) {
         game.setStates(GameState.END);
     }
-
+    public void exitGameAndSave(Game game, List<Hero> players,Controller controller) {
+        controller.insertPlayers(players,true);
+        game.setStates(GameState.END);
+    }
 
     /**
      * affiche un string pour le déroulement du jeu

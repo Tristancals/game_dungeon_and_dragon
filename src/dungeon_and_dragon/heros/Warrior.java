@@ -4,10 +4,10 @@ import dungeon_and_dragon.gears.*;
 import java.util.ArrayList;
 
 public class Warrior extends Hero {
-    public Warrior(String name, int level, Offensive offensive,
+    public Warrior(int id,String name, int level, Offensive offensive,
                    Defensive defensive, ArrayList<Heal> inventory) {
 
-        super("Guerrier",
+        super(id,"Guerrier",
                 name, level,
                 10,
                 new int[]{5, 10},

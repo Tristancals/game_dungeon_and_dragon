@@ -2,15 +2,11 @@ package dungeon_and_dragon;
 
 import dungeon_and_dragon.exceptions.PlayerOutOfBoardException;
 import dungeon_and_dragon.gears.Gear;
-import dungeon_and_dragon.gears.Heal;
 import dungeon_and_dragon.heros.Hero;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.interfaces.Interactable;
+import dungeon_and_dragon.rooms.Chest;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 
@@ -26,7 +22,8 @@ public class Game {
     private int round = 0;
     private int positionPlayerAtStart;
     private boolean gameInProgress = true;
-private Controller controller=new Controller();
+    private Controller controller = new Controller();
+
     public Game(Menu menu) {
         this.menu = menu;
         start();
@@ -46,6 +43,7 @@ private Controller controller=new Controller();
             System.out.println("switch");
             switch (this.states) {
                 case START:
+                    controller.selectAllPlayers();
                     menu.launchGame(this);
                     break;
                 case PREPARATION:
@@ -62,13 +60,12 @@ private Controller controller=new Controller();
                     break;
                 case END:
                     System.out.println("---END---");
-                    controller.insertPlayers(this.players);
+
                     ///
                     break;
             }
         }
     }
-
 
 
     /**
@@ -106,6 +103,22 @@ private Controller controller=new Controller();
         this.dungeonLevel = dungeonLevel;
         Dungeon dungeon = new Dungeon(nbrRoom, dungeonLevel);
         level = dungeon.getLevel();
+
+        for (Interactable room:level ) {
+            if(room.getClass() == Chest.class){
+                System.out.println( room );
+                if (((Chest)room).getOffensive()!=null){
+                    System.out.println(((Chest)room).getOffensive().getType());
+                }
+                if (((Chest)room).getDefensive()!=null){
+                    System.out.println(((Chest)room).getDefensive().getType());
+                }
+                if (((Chest)room).getHeal()!=null){
+                    System.out.println(((Chest)room).getHeal().getType());
+                }
+            }
+        }
+
         setStates(GameState.GAME);
     }
 
@@ -177,7 +190,7 @@ private Controller controller=new Controller();
                                             
                     """);
             setStates(GameState.END);
-            controller.insertPlayers(players);
+            controller.insertPlayers(players, false);
             menu.display(players.toString());
         }
     }
@@ -196,11 +209,13 @@ private Controller controller=new Controller();
         menu.displayChoice("Combat",
                 new String[]{"'1' pour lancer une attaque",
                         "'2' pour tenter de fuir ...(" + (6 - dungeonLevel) + "/6 de réussit)",
-                        "'0' pour quitter le jeu.."});
+                        "'0' pour quitter le jeu.." +
+                                "'s' pour quitter le jeu & enregistrer partie"});
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
         functionChoiceMap.put("1", () -> enemy.sufferedAnAttack(player, menu, this));
         functionChoiceMap.put("2", () -> tryRunAway(player, enemy));
         functionChoiceMap.put("0", () -> menu.exitGame(this));
+        functionChoiceMap.put("s", () -> menu.exitGameAndSave(this, players, controller));
         functionChoiceMap.put("666", () -> whatDoesThePlayerDoDuringTheFight(player, enemy, menu));
         menu.listenerChoice(functionChoiceMap);
     }
@@ -246,7 +261,10 @@ private Controller controller=new Controller();
             }
         }
         choices.add("'0' pour quitter le jeu");
+        choices.add("'s' pour quitter le jeu et enregistrer partie");
         functionChoiceMap.put("666", () -> whatDoesThePlayerDoInHisTurn(player));
+        functionChoiceMap.put("s", () -> menu.exitGameAndSave(this, players, controller));
+
         functionChoiceMap.put("0", () -> menu.exitGame(this));
         String[] choicesArray = new String[choices.size()];
         menu.displayChoice("Debut du tour de " + player.getName(), choices.toArray(choicesArray));
