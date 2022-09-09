@@ -30,6 +30,7 @@ public class Game {
     private boolean gameInProgress = true;
 
     public Game() {
+
     }
 
 
@@ -43,7 +44,6 @@ public class Game {
      */
     protected void start() {
         while (gameInProgress) {
-            System.out.println("switch");
             switch (this.states) {
                 case START:
                     menu.launchGame();
@@ -52,12 +52,14 @@ public class Game {
                     menu.selectDifficultyDungeon();
                     break;
                 case GAME:
-                    menu.display("""
+                    if(round==0) {
+                        menu.display("""
 
-                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            ~~~~~~~~~~ - DEBUT DE LA PARTIE - ~~~~~~~~~~
-                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            """);
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                ~~~~~~~~~~ - DEBUT DE LA PARTIE - ~~~~~~~~~~
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                """);
+                    }
                     playRoundTeam();
                     break;
                 case END:
@@ -106,21 +108,20 @@ public class Game {
         Dungeon dungeon = new Dungeon(nbrRoom, dungeonLevel);
         level = dungeon.getLevel();
 
-        for (Interactable room : level) {
-            if (room.getClass() == Chest.class) {
-                System.out.println(room);
-                if (((Chest) room).getOffensive() != null) {
-                    System.out.println(((Chest) room).getOffensive().getType());
-                }
-                if (((Chest) room).getDefensive() != null) {
-                    System.out.println(((Chest) room).getDefensive().getType());
-                }
-                if (((Chest) room).getHeal() != null) {
-                    System.out.println(((Chest) room).getHeal().getType());
-                }
-            }
-        }
-
+//        for (Interactable room : level) {
+//            if (room.getClass() == Chest.class) {
+//                System.out.println(room);
+//                if (((Chest) room).getOffensive() != null) {
+//                    System.out.println(((Chest) room).getOffensive().getType());
+//                }
+//                if (((Chest) room).getDefensive() != null) {
+//                    System.out.println(((Chest) room).getDefensive().getType());
+//                }
+//                if (((Chest) room).getHeal() != null) {
+//                    System.out.println(((Chest) room).getHeal().getType());
+//                }
+//            }
+//        } TODO
         setStates(GameState.GAME);
     }
 
@@ -151,6 +152,7 @@ public class Game {
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             ~~~~~~~~~~ - JOUEUR SUIVANT - ~~~~~~~~~~
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            
                             """);
                 }
                 if (player.isALife()) {
@@ -158,13 +160,26 @@ public class Game {
                             " de " + player.getName() +
                             " " + playerNbr + "/" + players.size() +
                             " - ########\n" + player);
+
+                    positionPlayerAtStart = player.getPosition() ;
                     menu.whatDoesThePlayerDoInHisTurn(player);
-                    positionPlayerAtStart = player.getPosition();
                     whatIsInTheCase(player);
+                    if (player.getPosition() == this.nbrRoom && player.isALife()) {
+                        menu.display("""
+
+
+
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    ~~~~~~~~~ - LE JOUEUR À TROUVER LA SORTIE - ~~~~~~~~~
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                            
+                     - TOUS LES JOUEURS VONT SE TÉLÉPORTER EN LIEU SÛR - 
+                     ~~~~~~~~~~~~~~~ - A LA FIN DU TOUR - ~~~~~~~~~~~~~~
+                    """);
+                        setStates(GameState.END);
+                    }
                 }
             }
-        } else {
-            gameInProgress = false;
         }
         if (gameInProgress && states == GameState.GAME) {
             if (round > 1) {
@@ -179,18 +194,31 @@ public class Game {
                                                 
                         """);
             }
-            playRoundTeam();
         } else {
-            menu.display("""
+            if(!allPlayerDead()) {
+                menu.display("""
 
 
 
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    ~~~~~~~~~~~~~~~~~~~~ - GAGNER - ~~~~~~~~~~~~~~~~~~~~
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                            
-                                            
-                    """);
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        ~~~~~~~~~~~~~~~~~~~~ - GAGNER - ~~~~~~~~~~~~~~~~~~~~
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                
+                                                
+                        """);
+            }else {
+
+                menu.display("""
+
+
+
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        ~~~~~~~~~~~~~~~~~~ - GAME OVER - ~~~~~~~~~~~~~~~~~~
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                
+                                                
+                        """);
+            }
             setStates(GameState.END);
             menu.exitGameAndSaveNotTheGame();
             menu.display(players.toString());
@@ -258,60 +286,49 @@ public class Game {
         } catch (PlayerOutOfBoardException e) {
             menu.display(e.getMessage());
         }
-
-        if (positionPlayer == this.nbrRoom && player.isALife()) {
-            // TODO partie finie à la fin du tour proposer une nouvelle partie
-            setStates(GameState.END);
-            gameInProgress = false;
-        }
     }
-
 
     /**
      * Fonction qui permet de vérifier si toute l'équipe est mort..
+     * Si c'est le cas passe à false gameInProgress
      *
-     * @return
+     * @return boolean true si toute l'équipe est morte
      */
     private boolean allPlayerDead() {
         int count = 0;
-        for (Hero player :
-                players) {
+        for (Hero player : players) {
             if (!player.isALife()) {
                 count++;
             }
         }
+        if (count == players.size()) {
+            gameInProgress = false;
+        }
         return count == players.size();
     }
-
 
     /**
      * fonction qui simule un dé à 6 faces
      *
-     * @return
+     * @return un int de 1 à 6
      */
     private int dieRoll() {
         return 1 + rand.nextInt(6);
-//        return 40;
     }
 
     /**
      * Fonction qui selon le contenu de la pieces appel une fonction pour interagir avec
      * et changer l'état de celle-ci selon l'interaction
      *
-     * @param player
+     * @param player transmet le joueur qui joue son tour à la fonction interact()
      */
     private void whatIsInTheCase(Hero player) {
-
         Interactable room = level.get(player.getPosition());
-
         menu.display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
                 room.toString() +
                 "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         room.interact(player, menu, this);
-
-
     }
-
 
     /**
      * lors du lancement de la partie cette fonction ajoute un joueur
@@ -344,7 +361,10 @@ public class Game {
         this.playersSave = playersSave;
     }
 
-    public List<Hero> getPlayersSave() {
+    public List<Hero> getPlayersSave(ControllerBDD controllerBDD) {
+
+       controllerBDD.selectAllPlayers(this);
+
         return playersSave;
     }
 

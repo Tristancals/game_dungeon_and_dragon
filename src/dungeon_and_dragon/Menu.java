@@ -28,11 +28,11 @@ public class Menu {
      */
     protected void launchGame() {
         displayChoice("Bienvenus dans DONJON & DRAGON",
-                new String[]{"'1' pour lancer une partie",
+                new String[]{"'entrée' pour lancer une partie",
                         "'0' pour quitter le jeu"});
 
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", this::selectNbrPlayers);
+        functionChoiceMap.put("", this::selectNbrPlayers);
         functionChoiceMap.put("0", this::exitGame);
         functionChoiceMap.put("666", this::launchGame);
         listenerChoice(functionChoiceMap);
@@ -77,6 +77,7 @@ public class Menu {
      * fonction pour choisir le nom de celui-ci playerName()
      */
     private void selectTypeHero() {
+        //TODO si perso en bdd charger perso//
         displayChoice("Selection de la classe de votre personnage",
                 new String[]{"'1' pour un Magicien",
                         "'2' pour un Guerrier",
@@ -92,7 +93,7 @@ public class Menu {
     }
 
     private void selectPlayerSave() {
-        List<Hero> playersSave = game.getPlayersSave();
+        List<Hero> playersSave = game.getPlayersSave(controllerBDD);
         List<String> choices = new ArrayList<>();
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
         for (int i = 0; i < playersSave.size(); i++) {
@@ -136,13 +137,13 @@ public class Menu {
      */
     public void selectDifficultyDungeon() {
         displayChoice("Sélectionner la difficulté",
-                new String[]{"'1' pour une petite balade..(facile)",
+                new String[]{"'entrée' pour une petite balade..(facile)",
                         "'2' pour une petite aventure..(moyenne)",
                         "'3' pour un épopée..(difficile)",
                         "'4' pour un suicide..(mortelle)",
                         "'0' pour quitter le jeu"});
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", () -> game.initDungeon(40, 1));
+        functionChoiceMap.put("", () -> game.initDungeon(40, 1));
         functionChoiceMap.put("2", () -> game.initDungeon(45, 2));
         functionChoiceMap.put("3", () -> game.initDungeon(50, 3));
         functionChoiceMap.put("4", () -> game.initDungeon(55, 4));
@@ -163,8 +164,8 @@ public class Menu {
     protected void whatDoesThePlayerDoInHisTurn(Hero player) {
         List<String> choices = new ArrayList<>();
         Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", () -> game.playerMouve(player));
-        choices.add("'1' pour lancer le dé");
+        functionChoiceMap.put("", () -> game.playerMouve(player));
+        choices.add("'entrée' pour lancer le dé");
 
         if (player.getLife() < player.getLifeMax()) {
             choices.add("'2' pour passer votre tour et regagner 1PV");

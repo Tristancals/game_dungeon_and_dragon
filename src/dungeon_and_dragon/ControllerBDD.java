@@ -128,9 +128,7 @@ public class ControllerBDD {
 
 
     public void selectAllPlayers(Game game) {
-
         getConnection();
-
         List<Hero> players = new ArrayList<>();
         try {
             Statement st = connection.createStatement();
@@ -141,7 +139,6 @@ public class ControllerBDD {
                 Statement statement = connection.createStatement();
 
                 String type = resultSet.getString("hero_type");
-                System.out.println(type);
                 Defensive gearDef = null;
                 Offensive gearOf = null;
                 int id_gear_def = resultSet.getInt("id_gear_def");
@@ -193,7 +190,6 @@ public class ControllerBDD {
             System.out.println(e);
         }
         game.setPlayersSave(players);
-        System.out.println(players);
         closeConnection();
     }
 
@@ -265,10 +261,7 @@ public class ControllerBDD {
 
                     }
                 } else {
-                    System.out.println("delete___________");
                     Statement st = connection.createStatement();
-//                    PreparedStatement
-                    System.out.println(sqlDeletePlayer(player));
                     st.executeUpdate(sqlDeletePlayer(player));
                 }
             }

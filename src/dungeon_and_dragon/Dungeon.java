@@ -36,7 +36,9 @@ public class Dungeon {
                 });
             }
         }
-        level.add(new Dragon("Le grand "+setMonsterName(), dungeonLevel+3));
+        level.add(new Dragon("Le Grand "+ setMonsterName(), dungeonLevel+3));
+        System.out.println(level.size());
+        System.out.println(nbrRoom);
     }
 
     private Interactable selectMonster() {

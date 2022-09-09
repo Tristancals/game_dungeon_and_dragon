@@ -1,6 +1,5 @@
 package dungeon_and_dragon;
 
-import dungeon_and_dragon.gears.Gear;
 
 public class ControllerGear {
     private String sqlSelectGearHero() {
