@@ -14,13 +14,10 @@ import java.util.List;
 public class Dungeon {
 
     private final int nbrRoom;
-
     private final List<Interactable> level = new ArrayList<>();
-
     private final int dungeonLevel;
     private final List<String> listNames = Arrays.asList("Lynn", "Vaughan", "Dunlap", "Carmella", "Gloria", "Krista", "Haynes", "Pitts", "Norma", "Andrews", "Bernadine", "Miranda", "Tyler", "Rowland", "Jeanne", "Bridgett", "Elvira", "Emily", "Carr", "Adrian", "Ann", "Sargent", "Morrison", "Grant", "Ethel", "Hodge", "Jenifer", "Cunningham", "Pace", "Juliana", "Mcdowell", "Mcdowell", "Zimmerman", "Aline");
     private final java.util.Random rand = new java.util.Random();
-
     public Dungeon(int nbrRoom, int dungeonLevel) {
         this.nbrRoom = nbrRoom;
         this.dungeonLevel = dungeonLevel;

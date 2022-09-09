@@ -8,7 +8,7 @@ public class Wizard extends Hero {
     public Wizard(int id,String name, int level, Offensive offensive,
                    Defensive defensive, ArrayList<Heal> inventory) {
 
-        super(id,"Magicien",
+        super(id,"Wizard",
                 name, level,
                 8,
                 new int[]{8, 15},

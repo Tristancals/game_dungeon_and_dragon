@@ -9,6 +9,7 @@ import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.rooms.Chest;
 import dungeon_and_dragon.rooms.Empty;
 import dungeon_and_dragon.interfaces.Interactable;
+import dungeon_and_dragon.rooms.enemies.Enemy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,7 +79,7 @@ public abstract class Hero implements SufferedAnAttack {
             menu.display("# -Le " + enemy.getType() + " à raté sont attaque!!!");
         }
         if (getLife() > 0) {
-            game.whatDoesThePlayerDoDuringTheFight(this, enemy, menu);
+            menu.whatDoesThePlayerDoDuringTheFight(this, (Enemy) enemy, menu);
         } else {
             menu.display("# \n~~~~~~~~~ - YOU LOSE - ~~~~~~~~~" +
                     "\n# -Votre héro à mordu la poussière..." +
@@ -91,6 +92,8 @@ public abstract class Hero implements SufferedAnAttack {
                     "\n#            ||||||" +
                     "\n#            ||||||" +
                     "\n#            ||||||");
+
+            menu.exitGameAndSaveTheGame();
         }
     }
 
@@ -194,6 +197,9 @@ public abstract class Hero implements SufferedAnAttack {
         return inventory;
     }
 
+    public int getId() {
+        return id;
+    }
     ////////////////////////////////////////////////////////////////
 
     @Override

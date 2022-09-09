@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDataSourceStorage">
+    <option name="dataSources">
+      <list>
+        <State>
+          <option name="id" value="8b3fb99a-8323-459f-b7e4-1f6f5aa177b4" />
+          <option name="name" value="tristan (DDL)" />
+          <option name="languageId" value="GenericSQL" />
+          <option name="urls">
+            <array>
+              <option value="file://$PROJECT_DIR$/data_base" />
+            </array>
+          </option>
+        </State>
+      </list>
+    </option>
+  </component>
+</project>

@@ -7,7 +7,7 @@ public class Warrior extends Hero {
     public Warrior(int id,String name, int level, Offensive offensive,
                    Defensive defensive, ArrayList<Heal> inventory) {
 
-        super(id,"Guerrier",
+        super(id,"Warrior",
                 name, level,
                 10,
                 new int[]{5, 10},

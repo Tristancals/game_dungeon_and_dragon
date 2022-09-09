@@ -1,8 +1,13 @@
 package dungeon_and_dragon;
 
 import dungeon_and_dragon.exceptions.PlayerOutOfBoardException;
-import dungeon_and_dragon.gears.Gear;
+import dungeon_and_dragon.gears.EnergyShield;
+import dungeon_and_dragon.gears.Shield;
+import dungeon_and_dragon.gears.Spell;
+import dungeon_and_dragon.gears.Weapon;
 import dungeon_and_dragon.heros.Hero;
+import dungeon_and_dragon.heros.Warrior;
+import dungeon_and_dragon.heros.Wizard;
 import dungeon_and_dragon.interfaces.SufferedAnAttack;
 import dungeon_and_dragon.interfaces.Interactable;
 import dungeon_and_dragon.rooms.Chest;
@@ -16,17 +21,15 @@ public class Game {
     private List<Interactable> level = new ArrayList<>();
     private int nbrRoom;
     private final List<Hero> players = new ArrayList<>();
+    private List<Hero> playersSave = new ArrayList<>();
     private int dungeonLevel;
     private GameState states = GameState.START;
-    private final Menu menu;
+    private Menu menu;
     private int round = 0;
     private int positionPlayerAtStart;
     private boolean gameInProgress = true;
-    private Controller controller = new Controller();
 
-    public Game(Menu menu) {
-        this.menu = menu;
-        start();
+    public Game() {
     }
 
 
@@ -38,16 +41,15 @@ public class Game {
      * END => fin de partie.. soit par la sortie d'un hero du donjon..
      * Soit par la mort de toute l'équipe
      */
-    private void start() {
+    protected void start() {
         while (gameInProgress) {
             System.out.println("switch");
             switch (this.states) {
                 case START:
-                    controller.selectAllPlayers();
-                    menu.launchGame(this);
+                    menu.launchGame();
                     break;
                 case PREPARATION:
-                    selectDifficultyDungeon();
+                    menu.selectDifficultyDungeon();
                     break;
                 case GAME:
                     menu.display("""
@@ -59,36 +61,36 @@ public class Game {
                     playRoundTeam();
                     break;
                 case END:
-                    System.out.println("---END---");
+                    menu.display("""
 
-                    ///
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            ~~~~~~~~~~~ - FIN DE LA PARTIE - ~~~~~~~~~~~
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            """);
+                    gameInProgress = false;
                     break;
             }
         }
     }
 
-
     /**
-     * Permet de choisir la difficulté
-     * change le nombre de pieces à visiter dans le donjon
-     * et le niveau des monstres présent dans celui-ci
+     * Récupère le choix de chaque joueur et crée leur personage
+     * et le donner à l'attribut List<players> à l'instance de game
+     *
+     * @param type class du hero choisie
+     * @param name nom du hero
      */
-    private void selectDifficultyDungeon() {
-        menu.displayChoice("Sélectionner la difficulté",
-                new String[]{"'1' pour une petite balade..(facile)",
-                        "'2' pour une petite aventure..(moyenne)",
-                        "'3' pour un épopée..(difficile)",
-                        "'4' pour un suicide..(mortelle)",
-                        "'0' pour quitter le jeu"});
-        Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", () -> initDungeon(40, 1));
-        functionChoiceMap.put("2", () -> initDungeon(45, 2));
-        functionChoiceMap.put("3", () -> initDungeon(50, 3));
-        functionChoiceMap.put("4", () -> initDungeon(55, 4));
-        functionChoiceMap.put("0", () -> menu.exitGame(this));
-        functionChoiceMap.put("666", this::selectDifficultyDungeon);
-        menu.listenerChoice(functionChoiceMap);
+    public void createNewHero(String type, String name) {
+        Hero player = switch (type) {
+            case "Warrior" -> new Warrior(0, name, 1, new Weapon("Glaive", 1),
+                    new Shield("Petit bouclier", 1), null);
+            default -> new Wizard(0, name, 1, new Spell("Foudre", 1),
+                    new EnergyShield("Petit Philtre", 1), null);
+        };
+        addPlayers(player);
+        menu.display("# Joueur crée:\n" + player);
     }
+
 
     /**
      * Fonction pour créer une instance d'un Dungeon
@@ -98,23 +100,23 @@ public class Game {
      * @param nbrRoom
      * @param dungeonLevel
      */
-    private void initDungeon(int nbrRoom, int dungeonLevel) {
+    protected void initDungeon(int nbrRoom, int dungeonLevel) {
         this.nbrRoom = nbrRoom;
         this.dungeonLevel = dungeonLevel;
         Dungeon dungeon = new Dungeon(nbrRoom, dungeonLevel);
         level = dungeon.getLevel();
 
-        for (Interactable room:level ) {
-            if(room.getClass() == Chest.class){
-                System.out.println( room );
-                if (((Chest)room).getOffensive()!=null){
-                    System.out.println(((Chest)room).getOffensive().getType());
+        for (Interactable room : level) {
+            if (room.getClass() == Chest.class) {
+                System.out.println(room);
+                if (((Chest) room).getOffensive() != null) {
+                    System.out.println(((Chest) room).getOffensive().getType());
                 }
-                if (((Chest)room).getDefensive()!=null){
-                    System.out.println(((Chest)room).getDefensive().getType());
+                if (((Chest) room).getDefensive() != null) {
+                    System.out.println(((Chest) room).getDefensive().getType());
                 }
-                if (((Chest)room).getHeal()!=null){
-                    System.out.println(((Chest)room).getHeal().getType());
+                if (((Chest) room).getHeal() != null) {
+                    System.out.println(((Chest) room).getHeal().getType());
                 }
             }
         }
@@ -156,7 +158,7 @@ public class Game {
                             " de " + player.getName() +
                             " " + playerNbr + "/" + players.size() +
                             " - ########\n" + player);
-                    whatDoesThePlayerDoInHisTurn(player);
+                    menu.whatDoesThePlayerDoInHisTurn(player);
                     positionPlayerAtStart = player.getPosition();
                     whatIsInTheCase(player);
                 }
@@ -164,7 +166,7 @@ public class Game {
         } else {
             gameInProgress = false;
         }
-        if (gameInProgress) {
+        if (gameInProgress && states == GameState.GAME) {
             if (round > 1) {
                 menu.display("""
 
@@ -190,35 +192,11 @@ public class Game {
                                             
                     """);
             setStates(GameState.END);
-            controller.insertPlayers(players, false);
+            menu.exitGameAndSaveNotTheGame();
             menu.display(players.toString());
         }
     }
 
-    /**
-     * fonction appeler apres avoir subi une attaque
-     * permet de continuer le combat en attaquant ==> enemy.sufferedAnAttack(player, menu, this)
-     * de fuir => tryRunAway(SufferedAnAttack player, SufferedAnAttack enemy)
-     * ou quitter le jeu ==> menu.exitGame(this)
-     *
-     * @param player
-     * @param enemy
-     * @param menu
-     */
-    public void whatDoesThePlayerDoDuringTheFight(SufferedAnAttack player, SufferedAnAttack enemy, Menu menu) {
-        menu.displayChoice("Combat",
-                new String[]{"'1' pour lancer une attaque",
-                        "'2' pour tenter de fuir ...(" + (6 - dungeonLevel) + "/6 de réussit)",
-                        "'0' pour quitter le jeu.." +
-                                "'s' pour quitter le jeu & enregistrer partie"});
-        Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", () -> enemy.sufferedAnAttack(player, menu, this));
-        functionChoiceMap.put("2", () -> tryRunAway(player, enemy));
-        functionChoiceMap.put("0", () -> menu.exitGame(this));
-        functionChoiceMap.put("s", () -> menu.exitGameAndSave(this, players, controller));
-        functionChoiceMap.put("666", () -> whatDoesThePlayerDoDuringTheFight(player, enemy, menu));
-        menu.listenerChoice(functionChoiceMap);
-    }
 
     /**
      * Fonction qui permet la fuite d'un joueur lors d'un combat mal engager..
@@ -227,7 +205,7 @@ public class Game {
      * @param player
      * @param enemy
      */
-    private void tryRunAway(SufferedAnAttack player, SufferedAnAttack enemy) {
+    protected void tryRunAway(SufferedAnAttack player, SufferedAnAttack enemy) {
         if (rand.nextInt(6) > (dungeonLevel - 1)) {
             menu.display("Vous parvenez à fuir en position: " + positionPlayerAtStart);
             player.setPosition(positionPlayerAtStart);
@@ -237,46 +215,13 @@ public class Game {
         }
     }
 
-    /**
-     * au début du tour de chaque joueur nous lui proposons
-     * d'avancer ==> playerMouve(player)
-     * de se soigner ==> playerStays(player) / playerStaysAndTakeHeal(player)
-     * (sauter un tour 1pv / ou si present consommer une potion)
-     * ou quitter le jeu
-     *
-     * @param player
-     */
-    private void whatDoesThePlayerDoInHisTurn(Hero player) {
-        List<String> choices = new ArrayList<>();
-        Map<String, Runnable> functionChoiceMap = new HashMap<>();
-        functionChoiceMap.put("1", () -> playerMouve(player));
-        choices.add("'1' pour lancer le dé");
-
-        if (player.getLife() < player.getLifeMax()) {
-            choices.add("'2' pour passer votre tour et regagner 1PV");
-            functionChoiceMap.put("2", () -> playerStays(player));
-            if (!player.displayInventory().equals("Inventaire: ")) {
-                choices.add("'3' pour passer votre tour et consommer une potion");
-                functionChoiceMap.put("3", () -> playerStaysAndTakeHeal(player));
-            }
-        }
-        choices.add("'0' pour quitter le jeu");
-        choices.add("'s' pour quitter le jeu et enregistrer partie");
-        functionChoiceMap.put("666", () -> whatDoesThePlayerDoInHisTurn(player));
-        functionChoiceMap.put("s", () -> menu.exitGameAndSave(this, players, controller));
-
-        functionChoiceMap.put("0", () -> menu.exitGame(this));
-        String[] choicesArray = new String[choices.size()];
-        menu.displayChoice("Debut du tour de " + player.getName(), choices.toArray(choicesArray));
-        menu.listenerChoice(functionChoiceMap);
-    }
 
     /**
      * le joueur récupère 1 PV
      *
      * @param player
      */
-    private void playerStays(Hero player) {
+    protected void playerStays(Hero player) {
         player.setLife(player.getLife() + 1);
     }
 
@@ -285,7 +230,7 @@ public class Game {
      *
      * @param player
      */
-    private void playerStaysAndTakeHeal(Hero player) {
+    protected void playerStaysAndTakeHeal(Hero player) {
         player.selectHeal(menu);
     }
 
@@ -298,7 +243,7 @@ public class Game {
         }
     }
 
-    private void playerMouve(Hero player) {
+    protected void playerMouve(Hero player) {
         int dieRoll = this.dieRoll();
         int positionPlayer = player.getPosition();
         positionPlayer += dieRoll;
@@ -315,7 +260,7 @@ public class Game {
         }
 
         if (positionPlayer == this.nbrRoom && player.isALife()) {
-            // TODO partie fini à la fin du tour proposer une nouvelle partie
+            // TODO partie finie à la fin du tour proposer une nouvelle partie
             setStates(GameState.END);
             gameInProgress = false;
         }
@@ -393,5 +338,29 @@ public class Game {
 
     public List<Interactable> getLevel() {
         return level;
+    }
+
+    public void setPlayersSave(List<Hero> playersSave) {
+        this.playersSave = playersSave;
+    }
+
+    public List<Hero> getPlayersSave() {
+        return playersSave;
+    }
+
+    public List<Hero> getPlayers() {
+        return players;
+    }
+
+    public void setMenu(Menu menu) {
+        this.menu = menu;
+    }
+
+    public int getDungeonLevel() {
+        return dungeonLevel;
+    }
+
+    public void setGameInProgress(boolean gameInProgress) {
+        this.gameInProgress = gameInProgress;
     }
 }
